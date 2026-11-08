@@ -1,8 +1,7 @@
-.vercel
 node_modules
+dist
+dist-ssr
+*.local
+.vercel
 .DS_Store
 Thumbs.db
-
-.vercel
-
-.vercel
