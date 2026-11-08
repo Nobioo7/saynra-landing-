@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Synra — a memory your AI keeps</title>
+<meta name="description" content="Synra is a memory OS for your AI tools. Persistent context across Cursor, Claude, and ChatGPT. Sign in and start remembering in seconds.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     FONT IMPORT (must be first)
+     ============================================================ */
+  @import url(https://db.onlinewebfonts.com/c/e55e9079ee863276569c8a68d776ef04?family=Futura+Md+BT+Medium);
+
+  /* ============================================================
+     SYNRA STYLES
+     ============================================================ */
+  :root {
+    --u: 1px;
+    --shift: 0px;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { height: 100%; scroll-behavior: smooth; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100%;
+    background: #000;
+    color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  .ring-section {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .frame {
+    position: absolute;
+    inset: 7.2vh 5vw;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: calc(14 * var(--u));
+    overflow: hidden;
+    background: #000;
+    isolation: isolate;
+  }
+
+  .ring-canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .nav {
+    position: absolute;
+    top: calc(24 * var(--u));
+    left: calc(26 * var(--u));
+    right: calc(24 * var(--u));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .nav > * { pointer-events: auto; }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: calc(9 * var(--u));
+    color: #fff;
+    font-size: calc(17.5 * var(--u));
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    user-select: none;
+    text-decoration: none;
+  }
+  .logo {
+    display: block;
+    width: calc(20 * var(--u));
+    height: calc(20 * var(--u));
+    flex: 0 0 auto;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: calc(4 * var(--u));
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: calc(18 * var(--u));
+    height: calc(29 * var(--u));
+    padding: 0 calc(14 * var(--u));
+    border-radius: calc(8 * var(--u));
+    background: rgba(150,150,150,.38);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    font-size: calc(14 * var(--u));
+    line-height: 1;
+  }
+  .pill a {
+    color: rgba(255,255,255,.9);
+    text-decoration: none;
+    font-weight: 400;
+    white-space: nowrap;
+    transition: color .16s ease;
+  }
+  .pill a:hover { color: #fff; }
+
+  .connect {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(29 * var(--u));
+    padding: 0 calc(14 * var(--u));
+    border: none;
+    border-radius: calc(8 * var(--u));
+    background: #fff;
+    color: #0a0a0a;
+    font-family: inherit;
+    font-size: calc(14 * var(--u));
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform .18s cubic-bezier(.22,.61,.36,1), box-shadow .18s ease;
+  }
+  .connect:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(255,255,255,.18);
+  }
+  .connect:active { transform: translateY(0); }
+
+  .hero {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(420 * var(--u) + var(--shift));
+    text-align: center;
+    z-index: 2;
+  }
+
+  .headline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-size: calc(176 * var(--u));
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .word {
+    display: block;
+    white-space: pre;
+    background: linear-gradient(12deg,
+      #fffaf6 28%,
+      #ffe6d6 46%,
+      #ffbc98 66%,
+      #ff8f62 88%,
+      #ff7a4c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .caret {
+    display: block;
+    flex: 0 0 auto;
+    width: calc(1.6 * var(--u));
+    height: calc(124 * var(--u));
+    margin-left: calc(7 * var(--u));
+    border-radius: calc(1 * var(--u));
+    background: #ffb48c;
+    box-shadow: 0 0 calc(10 * var(--u)) rgba(255,150,110,.55);
+  }
+
+  .subline {
+    margin: calc(26 * var(--u)) 0 0;
+    font-size: calc(18 * var(--u));
+    line-height: calc(24 * var(--u));
+    font-weight: 400;
+    color: rgba(255,255,255,.92);
+    letter-spacing: -0.005em;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: calc(19 * var(--u));
+    height: calc(41 * var(--u));
+    padding: 0 calc(17 * var(--u));
+    border: none;
+    border-radius: calc(10 * var(--u));
+    background: #fff;
+    color: #0a0a0a;
+    font-family: inherit;
+    font-size: calc(15 * var(--u));
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .2s cubic-bezier(.22,.61,.36,1), box-shadow .2s ease;
+  }
+  .cta:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 calc(10 * var(--u)) calc(34 * var(--u)) rgba(255,120,60,.45),
+      0 0 calc(70 * var(--u)) rgba(255,90,40,.28);
+  }
+  .cta:active { transform: translateY(0); }
+
+  .platforms {
+    margin: calc(12 * var(--u)) 0 0;
+    font-size: calc(13 * var(--u));
+    line-height: 1.2;
+    color: rgba(255,255,255,.5);
+    letter-spacing: 0;
+  }
+  .platforms a {
+    color: rgba(255,255,255,.78);
+    text-decoration: none;
+    transition: color .16s ease;
+  }
+  .platforms a:hover { color: #fff; }
+
+  .benefits-section {
+    position: relative;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #000;
+    padding: 3rem 1rem;
+    font-family: 'Futura Md BT Medium', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #fff;
+  }
+  @media (min-width: 640px) { .benefits-section { padding: 5rem 1.5rem; } }
+  @media (min-width: 768px) { .benefits-section { padding: 5rem 2.5rem; } }
+
+  .benefits-heading {
+    color: #fff;
+    font-size: 1.875rem;
+    font-weight: 300;
+    text-align: center;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    margin: 0 0 3rem;
+  }
+  @media (min-width: 640px) { .benefits-heading { font-size: 2.25rem; margin-bottom: 6rem; } }
+  @media (min-width: 768px) { .benefits-heading { font-size: 3rem; } }
+
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  @media (min-width: 640px) { .benefits-grid { gap: 1rem; } }
+  @media (min-width: 768px) { .benefits-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  .benefit-card {
+    position: relative;
+    height: 380px;
+    border-radius: 1rem;
+    background: #0a0a0a;
+    overflow: hidden;
+  }
+  @media (min-width: 640px) { .benefit-card { height: 460px; } }
+
+  .benefit-card--pad { padding: 1.5rem; }
+  @media (min-width: 640px) { .benefit-card--pad { padding: 2rem; } }
+
+  .benefit-blob {
+    position: absolute;
+    border-radius: 9999px;
+    background: #1e3a8a;
+    filter: blur(64px);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .benefit-blob--left {
+    top: 50%;
+    transform: translateY(-50%);
+    left: -420px;
+    width: 460px;
+    height: 460px;
+  }
+  .benefit-blob--tr {
+    top: -7rem;
+    right: -7rem;
+    width: 14rem;
+    height: 14rem;
+  }
+
+  .benefit-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .benefit-title {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 300;
+    line-height: 1.25;
+    margin: 0;
+  }
+  @media (min-width: 640px) { .benefit-title { font-size: 1.5rem; } }
+
+  .benefit-body {
+    font-size: 13px;
+    line-height: 1.625;
+    color: rgba(255,255,255,.7);
+    font-weight: 300;
+    margin: 3rem 0 0;
+    max-width: 280px;
+  }
+  @media (min-width: 640px) {
+    .benefit-body { font-size: 14px; margin-top: 5rem; }
+  }
+
+  .benefit-body--bottom { margin: auto 0 0; max-width: 320px; }
+
+  .benefit-card--video { display: flex; flex-direction: column; padding: 0; }
+  .benefit-video-wrap {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    height: 75%;
+    flex-shrink: 0;
+  }
+  .benefit-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .benefit-video-fade {
+    pointer-events: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8rem;
+    background: linear-gradient(to bottom, rgba(10,10,10,0), #0a0a0a);
+  }
+  .benefit-video-text {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 1.5rem;
+  }
+  @media (min-width: 640px) { .benefit-video-text { padding: 2rem; } }
+  .benefit-video-text .benefit-title { text-align: left; }
+
+  @media (max-width: 767px) {
+    .frame { inset: 10px; }
+    .pill { display: none; }
+    .headline { font-size: min(calc(176 * var(--u)), 22vw); }
+    .caret {
+      height: calc(124 * var(--u) * 0.5);
+      width: max(2px, calc(1.6 * var(--u)));
+      margin-left: calc(5 * var(--u));
+    }
+    .subline { font-size: 15px; line-height: 21px; margin-top: calc(20 * var(--u)); }
+    .brand { font-size: max(15px, calc(17.5 * var(--u))); }
+    .connect {
+      height: max(34px, calc(29 * var(--u)));
+      font-size: max(13px, calc(14 * var(--u)));
+      padding: 0 max(16px, calc(14 * var(--u)));
+      border-radius: max(9px, calc(8 * var(--u)));
+    }
+    .cta {
+      height: max(44px, calc(41 * var(--u)));
+      font-size: max(14px, calc(15 * var(--u)));
+      padding: 0 max(22px, calc(17 * var(--u)));
+      border-radius: max(11px, calc(10 * var(--u)));
+    }
+    .platforms { font-size: 12px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .connect, .cta, .pill a, .platforms a { transition: none; }
+  }
+
+  /* ============================================================
+     SOLACE STYLES (SCOPED TO #solace-page)
+     ============================================================ */
+  #solace-page {
+    --u: min(calc(100vw/1600), calc(100vh/940));
+    --cream: #fbefe2;
+    --mid: #d9c3ad;
+    --line: rgba(255,214,170,.14);
+    --glass: rgba(34,18,8,.42);
+    background: #050302;
+    color: var(--cream);
+    font-family: Geist, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #solace-page * { box-sizing: border-box; margin: 0; padding: 0; }
+  #solace-page a { color: inherit; text-decoration: none; }
+  #solace-page button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+  #solace-page ul { list-style: none; }
+
+  #solace-page .wrap { position: relative; min-height: 100svh; overflow: hidden; background: #050302; }
+  #solace-page #dots { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #solace-page .content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; min-height: 100svh; padding: calc(64*var(--u)) calc(28*var(--u)) calc(28*var(--u)); }
+  #solace-page h2 { font-size: calc(40*var(--u)); font-weight: 600; letter-spacing: -.02em; text-align: center; }
+  #solace-page .faq { width: calc(688*var(--u)); margin-top: calc(22*var(--u)); padding: calc(4*var(--u)) calc(21*var(--u)); background: var(--glass); border: 1px solid rgba(255,190,120,.14); border-radius: calc(6*var(--u)); -webkit-backdrop-filter: blur(calc(10*var(--u))); backdrop-filter: blur(calc(10*var(--u))); box-shadow: 0 calc(20*var(--u)) calc(60*var(--u)) rgba(0,0,0,.45); }
+  #solace-page .q { border-bottom: 1px solid var(--line); }
+  #solace-page .q:last-child { border-bottom: 0; }
+  #solace-page .q button { display: flex; align-items: center; justify-content: space-between; gap: calc(20*var(--u)); width: 100%; padding: calc(17*var(--u)) 0; font-size: calc(17*var(--u)); font-weight: 500; letter-spacing: -.005em; }
+  #solace-page .q svg { flex: none; width: calc(14*var(--u)); height: calc(14*var(--u)); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+  #solace-page .q[data-open] svg { transform: rotate(180deg); }
+  #solace-page .a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s cubic-bezier(.2,.8,.2,1); }
+  #solace-page .q[data-open] .a { grid-template-rows: 1fr; }
+  #solace-page .a>div { overflow: hidden; }
+  #solace-page .a p { padding: 0 calc(20*var(--u)) calc(20*var(--u)) 0; font-size: calc(15*var(--u)); line-height: 1.6; color: var(--mid); }
+  #solace-page footer { width: 100%; margin-top: auto; display: grid; grid-template-columns: 1fr auto; gap: calc(40*var(--u)); padding: calc(46*var(--u)) calc(64*var(--u)) calc(44*var(--u)); background: linear-gradient(180deg, rgba(40,20,8,.5), rgba(84,40,14,.44)); border: 1px solid rgba(255,190,120,.12); border-radius: calc(6*var(--u)); -webkit-backdrop-filter: blur(calc(12*var(--u))); backdrop-filter: blur(calc(12*var(--u))); }
+  #solace-page .brand { display: flex; align-items: center; gap: calc(14*var(--u)); font-size: calc(25*var(--u)); font-weight: 500; letter-spacing: -.02em; }
+  #solace-page .mark { display: grid; place-items: center; width: calc(38*var(--u)); height: calc(38*var(--u)); background: var(--cream); border-radius: calc(2*var(--u)); }
+  #solace-page .mark svg { width: 56%; height: 56%; fill: #1b0d05; }
+  #solace-page .tag { margin-top: calc(20*var(--u)); max-width: calc(440*var(--u)); font-size: calc(15*var(--u)); line-height: 1.6; color: #f0dcc6; }
+  #solace-page .social { display: flex; gap: calc(16*var(--u)); margin-top: calc(26*var(--u)); }
+  #solace-page .social a { display: grid; place-items: center; width: calc(26*var(--u)); height: calc(26*var(--u)); opacity: .9; transition: opacity .2s; }
+  #solace-page .social a:hover { opacity: .6; }
+  #solace-page .social svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  #solace-page .copy { margin-top: calc(34*var(--u)); font-size: calc(14*var(--u)); color: #ecd8c2; }
+  #solace-page .links { display: grid; grid-template-columns: repeat(3, calc(196*var(--u))); gap: calc(8*var(--u)); }
+  #solace-page .links h3 { font-size: calc(15*var(--u)); font-weight: 600; margin-bottom: calc(16*var(--u)); }
+  #solace-page .links li { margin-bottom: calc(11*var(--u)); font-size: calc(14.5*var(--u)); color: #ead5be; }
+  #solace-page .links a { transition: color .2s; }
+  #solace-page .links a:hover { color: #fff; }
+  #solace-page button:focus-visible, #solace-page a:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+
+  @media (max-width: 820px) {
+    #solace-page { --u: 1px; }
+    #solace-page .content { padding: 48px 16px 16px; }
+    #solace-page h2 { font-size: 32px; }
+    #solace-page .faq { width: 100%; margin-top: 20px; }
+    #solace-page footer { grid-template-columns: 1fr; padding: 32px 24px; margin-top: 64px; }
+    #solace-page .links { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SECTION 1 — HERO (Synra)
+     ============================================================ -->
+<section class="ring-section" id="hero-section">
+  <div class="frame" id="hero-frame">
+    <canvas class="ring-canvas" id="ring-hero" aria-hidden="true"></canvas>
+
+    <header class="nav">
+      <a class="brand" href="#hero-section" aria-label="Synra home">
+        <svg class="logo" viewBox="0 0 20 20" fill="none"
+             stroke="#fff" stroke-width="1.7"
+             stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+          <path d="M10 1.6 L15.9 6.1 L10 10.6 L4.1 6.1 Z"/>
+          <path d="M4.1 11.1 L10 18.4 L15.9 11.1"/>
+        </svg>
+        <span>Synra</span>
+      </a>
+      <div class="nav-right">
+        <nav class="pill" aria-label="Primary">
+          <a href="#benefits">Features</a>
+          <a href="#benefits">Docs</a>
+        </nav>
+        <a class="connect" href="#solace-page">Launch</a>
+      </div>
+    </header>
+
+    <div class="hero" id="hero-content">
+      <h1 class="headline">
+        <span class="word" id="typed-hero">Memory</span>
+        <span class="caret" id="caret-hero"></span>
+      </h1>
+      <p class="subline">
+        Your AI forgets everything. Synra doesn't.<br>
+        Local-first persistent context for Cursor, Claude, and ChatGPT.
+      </p>
+      <a class="cta" href="#solace-page">Open Synra</a>
+      <p class="platforms">Runs locally via Ollama · Obsidian-style Markdown Vault · MCP Server</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 2 — KEY BENEFITS (Synra)
+     ============================================================ -->
+<section class="benefits-section" id="benefits" aria-labelledby="benefits-heading">
+  <h2 class="benefits-heading" id="benefits-heading">Key Benefits</h2>
+
+  <div class="benefits-grid">
+
+    <article class="benefit-card benefit-card--pad">
+      <div class="benefit-blob benefit-blob--left" aria-hidden="true"></div>
+      <div class="benefit-content">
+        <h3 class="benefit-title">
+          Persistent Context<br>Across Every Tool
+        </h3>
+        <p class="benefit-body">
+          Synra integrates with Cursor and Claude via its MCP Server, and captures web chats via a Chrome Extension. It remembers your architecture, codebase, and past decisions, retrieving the right knowledge the moment you need it.
+        </p>
+      </div>
+    </article>
+
+    <article class="benefit-card benefit-card--video">
+      <div class="benefit-video-wrap" style="height:75%">
+        <video
+          class="benefit-video"
+          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260421_072701_f6a01abb-eb30-4559-9d6e-774362defbc3.mp4"
+          autoplay loop muted playsinline></video>
+        <div class="benefit-video-fade" aria-hidden="true"></div>
+      </div>
+      <div class="benefit-video-text">
+        <h3 class="benefit-title">
+          Dual-Write Storage<br>Local-First Vault
+        </h3>
+      </div>
+    </article>
+
+    <article class="benefit-card benefit-card--pad">
+      <div class="benefit-blob benefit-blob--tr" aria-hidden="true"></div>
+      <div class="benefit-content">
+        <h3 class="benefit-title">
+          Anatomical Brain Graph<br>Of Your Knowledge
+        </h3>
+        <p class="benefit-body benefit-body--bottom">
+          Synra uses a local LLM to extract concepts as [[wikilinks]] and maps them to a 4K Canvas2D anatomical brain. Your knowledge compounds, visualized by Frontal, Temporal, and Parietal regions, not just a list.
+        </p>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 3 — SOLACE FAQ & FOOTER
+     ============================================================ -->
+<div id="solace-page">
+  <main class="wrap">
+    <canvas id="dots" aria-hidden="true"></canvas>
+    <div class="content">
+      <h2>Questions, answered</h2>
+      <div class="faq" id="faq">
+        <div class="q" data-open><button aria-expanded="true">What exactly is Synra?<svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg></button><div class="a"><div><p>Synra is a local-first AI context OS. It acts as a persistent memory layer for your AI tools, combining an Obsidian-style Markdown vault, a local LLM, and an anatomical brain graph.</p></div></div></div>
+        <div class="q"><button aria-expanded="false">How does it remember my context?<svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg></button><div class="a"><div><p>Every memory is dual-written to a Supabase database and saved as a local .md file in your synra-vault folder. A local Llama 3.2 model parses your conversations and extracts [[wikilinks]] to connect the dots.</p></div></div></div>
+        <div class="q"><button aria-expanded="false">Is my data private?<svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg></button><div class="a"><div><p>Yes. Unlike other tools, Synra uses your local GPU via Ollama to process LLM requests. Your Markdown files stay on your hard drive, and your database runs on your own Supabase instance. Nothing is used to train third-party models.</p></div></div></div>
+        <div class="q"><button aria-expanded="false">What tools does Synra connect to?<svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg></button><div class="a"><div><p>Synra connects to Cursor and Claude Desktop via an MCP Server. It captures context from ChatGPT and Claude Web via a Chrome Extension. It also features a built-in voice assistant powered by the Web Speech API.</p></div></div></div>
+      </div>
+      <footer>
+        <div>
+          <a class="brand" href="#" aria-label="Synra"><span class="mark"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="14" cy="6" r="3"/><circle cx="6" cy="14" r="3"/><circle cx="14" cy="14" r="3"/></svg></span>Synra</a>
+          <p class="tag">A local-first developer context OS. Persistent memory for AI coding tools, complete with an Obsidian-style vault, local LLM, and anatomical 3D brain graph.</p>
+          <nav class="social" aria-label="Social">
+            <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10v6M8 7.5v.01M12 16v-3.5a2 2 0 0 1 4 0V16M12 10v6"/></svg></a>
+            <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
+            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17 7v.01"/></svg></a>
+            <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5Z"/></svg></a>
+          </nav>
+          <p class="copy">© Synra 2026 · All rights reserved</p>
+        </div>
+        <div class="links">
+          <div><h3>Product</h3><ul><li><a href="#">Overview</a></li><li><a href="#">Voice Assistant</a></li><li><a href="#">Brain Graph</a></li><li><a href="#">Markdown Vault</a></li><li><a href="#">MCP Server</a></li><li><a href="#">Chrome Extension</a></li><li><a href="#">Security</a></li></ul></div>
+          <div><h3>Resources</h3><ul><li><a href="#">Docs</a></li><li><a href="#">Guides</a></li><li><a href="#">API Reference</a></li><li><a href="#">MCP Setup</a></li><li><a href="#">Ollama Setup</a></li></ul></div>
+          <div><h3>Company</h3><ul><li><a href="#">About</a></li><li><a href="#">Customers</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul></div>
+        </div>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     SYNRA SCRIPTS
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  function createRingController(opts) {
+    const frameEl = document.getElementById(opts.frameId);
+    const canvas  = document.getElementById(opts.canvasId);
+    const ctx     = canvas.getContext('2d');
+    const bloom   = document.createElement('canvas');
+    const bctx    = bloom.getContext('2d');
+
+    const heroEl  = document.getElementById(opts.heroId);
+    const typedEl = document.getElementById(opts.typedId);
+    const caretEl = document.getElementById(opts.caretId);
+    const section = frameEl.closest('.ring-section');
+
+    const TWO_PI = Math.PI * 2;
+    const RI_BASE = 435;
+    const RO_BASE = 652;
+    const STRANDS = 196;
+    const SEG     = 40;
+
+    let FW = 0, FH = 0, W = 0, H = 0, U = 1, DPR = 1, shiftPx = 0;
+    let RI = 0, RO = 0;
+
+    let bodyGrad, edgeGrad, edgeGradB, ambientGrad, haloGrad, innerGrad;
+
+    const POW   = new Float64Array(SEG + 1);
+    const QQ    = new Float64Array(SEG + 1);
+    const SINPQ = new Float64Array(SEG + 1);
+    const HWF   = new Float64Array(SEG + 1);
+    const RSF   = new Float64Array(SEG + 1);
+
+    function smoothstep01(x) {
+      x = x < 0 ? 0 : x > 1 ? 1 : x;
+      return x * x * (3 - 2 * x);
+    }
+
+    (function initTables() {
+      for (let j = 0; j <= SEG; j++) {
+        const q = j / SEG;
+        POW[j]   = Math.pow(1 - q, 4.2);
+        QQ[j]    = 0.05 * q * q;
+        SINPQ[j] = Math.sin(Math.PI * q);
+        const s  = smoothstep01(q / 0.28);
+        HWF[j]   = 0.15 + 3.3 * s * (1 - 0.25 * q);
+        RSF[j]   = RI_BASE + (RO_BASE - RI_BASE) * q;
+      }
+    })();
+
+    const PXa = new Float64Array(SEG + 1), PYa = new Float64Array(SEG + 1);
+    const LXa = new Float64Array(SEG + 1), LYa = new Float64Array(SEG + 1);
+    const RXa = new Float64Array(SEG + 1), RYa = new Float64Array(SEG + 1);
+
+    function annulusPath(c, r0, r1) {
+      c.beginPath();
+      c.arc(0, 0, r1, 0, TWO_PI, false);
+      c.arc(0, 0, r0, 0, TWO_PI, true);
+      c.closePath();
+    }
+
+    function buildGradients() {
+      bodyGrad = ctx.createRadialGradient(0, 0, RI, 0, 0, RO);
+      bodyGrad.addColorStop(0.00, '#b01e50');
+      bodyGrad.addColorStop(0.12, '#9c1236');
+      bodyGrad.addColorStop(0.40, '#860c18');
+      bodyGrad.addColorStop(0.70, '#9c1a0a');
+      bodyGrad.addColorStop(0.90, '#c63c0e');
+      bodyGrad.addColorStop(1.00, '#e85a18');
+
+      edgeGrad = ctx.createRadialGradient(0, 0, RI, 0, 0, RO);
+      edgeGrad.addColorStop(0.00, 'rgba(255,130,185,.85)');
+      edgeGrad.addColorStop(0.08, 'rgba(255,84,138,.95)');
+      edgeGrad.addColorStop(0.28, 'rgba(255,56,80,.95)');
+      edgeGrad.addColorStop(0.55, 'rgba(255,58,44,.95)');
+      edgeGrad.addColorStop(0.80, 'rgba(255,92,36,1)');
+      edgeGrad.addColorStop(0.94, 'rgba(255,122,44,1)');
+      edgeGrad.addColorStop(1.00, 'rgba(255,150,70,1)');
+
+      edgeGradB = bctx.createRadialGradient(0, 0, RI, 0, 0, RO);
+      edgeGradB.addColorStop(0.00, 'rgba(255,130,185,.85)');
+      edgeGradB.addColorStop(0.08, 'rgba(255,84,138,.95)');
+      edgeGradB.addColorStop(0.28, 'rgba(255,56,80,.95)');
+      edgeGradB.addColorStop(0.55, 'rgba(255,58,44,.95)');
+      edgeGradB.addColorStop(0.80, 'rgba(255,92,36,1)');
+      edgeGradB.addColorStop(0.94, 'rgba(255,122,44,1)');
+      edgeGradB.addColorStop(1.00, 'rgba(255,150,70,1)');
+
+      ambientGrad = ctx.createRadialGradient(0, 0, RI, 0, 0, RO);
+      ambientGrad.addColorStop(0.00, 'rgba(170,14,50,.35)');
+      ambientGrad.addColorStop(0.55, 'rgba(120,8,14,.45)');
+      ambientGrad.addColorStop(1.00, 'rgba(170,40,6,.40)');
+
+      haloGrad = ctx.createRadialGradient(0, 0, RO - 16 * U, 0, 0, RO + 70 * U);
+      haloGrad.addColorStop(0.00, 'rgba(255,110,30,.42)');
+      haloGrad.addColorStop(0.45, 'rgba(255,80,15,.16)');
+      haloGrad.addColorStop(1.00, 'rgba(255,60,10,0)');
+
+      innerGrad = ctx.createRadialGradient(0, 0, RI - 70 * U, 0, 0, RI + 30 * U);
+      innerGrad.addColorStop(0.00, 'rgba(255,120,170,0)');
+      innerGrad.addColorStop(0.72, 'rgba(255,120,170,.09)');
+      innerGrad.addColorStop(1.00, 'rgba(255,120,170,0)');
+    }
+
+    function setCSSVars() {
+      if (section) {
+        section.style.setProperty('--u', U.toFixed(4) + 'px');
+        section.style.setProperty('--shift', shiftPx.toFixed(2) + 'px');
+      }
+    }
+
+    function resize() {
+      FW = frameEl.clientWidth;
+      FH = frameEl.clientHeight;
+      if (!FW || !FH) return;
+
+      const phone = window.innerWidth < 768;
+      U = phone ? FW / 600 : Math.min(FW / 1052, FH / 780);
+      if (!isFinite(U) || U <= 0) U = 1;
+
+      W = FW; H = FH;
+      DPR = Math.min(2, window.devicePixelRatio || 1);
+
+      canvas.width  = Math.round(W * DPR);
+      canvas.height = Math.round(H * DPR);
+      canvas.style.width  = W + 'px';
+      canvas.style.height = H + 'px';
+
+      bloom.width  = Math.max(1, Math.round(W * DPR * 0.32));
+      bloom.height = Math.max(1, Math.round(H * DPR * 0.32));
+
+      RI = RI_BASE * U;
+      RO = RO_BASE * U;
+
+      shiftPx = 0;
+      setCSSVars();
+
+      if (phone) {
+        const hh = heroEl.offsetHeight;
+        const bottom = 420 * U + hh;
+        shiftPx = Math.max(0, (FH - bottom) / 2);
+        setCSSVars();
+      }
+
+      buildGradients();
+
+      if (reduced) render(getTime() / 1000);
+    }
+
+    let ptrTX = 0, ptrTY = 0;
+    let px = 0, py = 0;
+
+    function onPointerMove(e) {
+      const r = frameEl.getBoundingClientRect();
+      let nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+      let ny = ((e.clientY - r.top) / r.height) * 2 - 1;
+      ptrTX = nx < -1 ? -1 : nx > 1 ? 1 : nx;
+      ptrTY = ny < -1 ? -1 : ny > 1 ? 1 : ny;
+    }
+    function onPointerLeave() { ptrTX = 0; ptrTY = 0; }
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerleave', onPointerLeave, { passive: true });
+
+    function drawFins(t, spin, k) {
+      const step = TWO_PI / STRANDS;
+      let startIdx = Math.round((-Math.PI / 2 - spin) / step) % STRANDS;
+      if (startIdx < 0) startIdx += STRANDS;
+
+      const lw  = 1.45 * U;
+      const blw = 5.3 * U;
+
+      for (let n = 0; n < STRANDS; n++) {
+        const i    = (startIdx + n) % STRANDS;
+        const base = i * step + spin;
+        const wob  = Math.sin(3 * base + 0.4 * t);
+
+        for (let j = 0; j <= SEG; j++) {
+          const r  = RSF[j] * U;
+          const th = base + k * POW[j] + k * QQ[j] + 0.02 * SINPQ[j] * wob;
+          PXa[j] = r * Math.cos(th);
+          PYa[j] = r * Math.sin(th);
+        }
+
+        for (let j = 0; j <= SEG; j++) {
+          const j0 = j > 0 ? j - 1 : 0;
+          const j1 = j < SEG ? j + 1 : SEG;
+          let tx = PXa[j1] - PXa[j0];
+          let ty = PYa[j1] - PYa[j0];
+          const len = Math.sqrt(tx * tx + ty * ty) || 1;
+          tx /= len; ty /= len;
+          const nx = -ty, ny = tx;
+          const hw = HWF[j] * U;
+          LXa[j] = PXa[j] + nx * hw;  LYa[j] = PYa[j] + ny * hw;
+          RXa[j] = PXa[j] - nx * hw;  RYa[j] = PYa[j] - ny * hw;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(LXa[0], LYa[0]);
+        for (let j = 1; j <= SEG; j++) ctx.lineTo(LXa[j], LYa[j]);
+        for (let j = SEG; j >= 0; j--) ctx.lineTo(RXa[j], RYa[j]);
+        ctx.closePath();
+        ctx.fillStyle = bodyGrad;
+        ctx.fill();
+
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.beginPath();
+        ctx.moveTo(LXa[0], LYa[0]);
+        for (let j = 1; j <= SEG; j++) ctx.lineTo(LXa[j], LYa[j]);
+        ctx.lineWidth   = lw;
+        ctx.strokeStyle = edgeGrad;
+        ctx.stroke();
+        ctx.globalCompositeOperation = 'source-over';
+
+        bctx.beginPath();
+        bctx.moveTo(LXa[0], LYa[0]);
+        for (let j = 1; j <= SEG; j++) bctx.lineTo(LXa[j], LYa[j]);
+        bctx.lineWidth   = blw;
+        bctx.strokeStyle = edgeGradB;
+        bctx.stroke();
+      }
+    }
+
+    function render(t) {
+      const spin = 0.06 * t;
+      const k    = 0.42 * (1 + 0.12 * Math.sin(0.55 * t));
+
+      const baseCx = W / 2 + 34 * U;
+      const baseCy = -212 * U + shiftPx;
+
+      const cx = baseCx + px * 14 * U;
+      const cy = baseCy + py * 10 * U;
+      const ys = 1.03 + py * 0.035;
+
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1;
+      ctx.filter = 'none';
+      ctx.clearRect(0, 0, W, H);
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(1, ys);
+
+      annulusPath(ctx, RI, RO);
+      ctx.fillStyle = ambientGrad;
+      ctx.fill();
+
+      annulusPath(ctx, RI - 70 * U, RI + 30 * U);
+      ctx.fillStyle = innerGrad;
+      ctx.fill();
+
+      annulusPath(ctx, RO - 16 * U, RO + 70 * U);
+      ctx.fillStyle = haloGrad;
+      ctx.fill();
+
+      bctx.setTransform(1, 0, 0, 1, 0, 0);
+      bctx.clearRect(0, 0, bloom.width, bloom.height);
+      const bs = 0.32 * DPR;
+      bctx.setTransform(bs, 0, 0, bs, 0, 0);
+      bctx.translate(cx, cy);
+      bctx.scale(1, ys);
+      bctx.globalAlpha = 0.7;
+      bctx.globalCompositeOperation = 'lighter';
+
+      drawFins(t, spin, k);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, RO, 0, TWO_PI);
+      ctx.lineWidth   = 1.6 * U;
+      ctx.strokeStyle = 'rgba(255,140,60,.85)';
+      ctx.stroke();
+
+      bctx.globalAlpha = 1;
+      bctx.lineWidth   = 9 * U;
+      bctx.strokeStyle = 'rgba(255,120,40,.9)';
+      bctx.beginPath(); bctx.arc(0, 0, RO, 0, TWO_PI); bctx.stroke();
+
+      bctx.lineWidth   = 5 * U;
+      bctx.strokeStyle = 'rgba(255,90,150,.75)';
+      bctx.beginPath(); bctx.arc(0, 0, RI, 0, TWO_PI); bctx.stroke();
+
+      ctx.restore();
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.filter = 'blur(' + (8 * U * DPR).toFixed(2) + 'px)';
+      ctx.drawImage(bloom, 0, 0, canvas.width, canvas.height);
+      ctx.filter = 'none';
+      ctx.globalCompositeOperation = 'source-over';
+    }
+
+    const WORDS   = opts.words;
+    const HOLD    = 2.6;
+    const DEL     = 0.07;
+    const EMPTY   = 0.25;
+    const TYPE    = 0.10;
+    const POST    = 0.15;
+    const BLINK   = 0.55;
+
+    const SEGS = [];
+    let PERIOD = 1;
+
+    (function buildTimeline() {
+      let acc = 0;
+      for (let i = 0; i < WORDS.length; i++) {
+        SEGS.push({ type: 'hold', s: acc, d: HOLD, w: i });            acc += HOLD;
+        const dDel = WORDS[i].length * DEL;
+        SEGS.push({ type: 'del',  s: acc, d: dDel, w: i });            acc += dDel;
+        SEGS.push({ type: 'empty', s: acc, d: EMPTY, w: i });          acc += EMPTY;
+        const nx = (i + 1) % WORDS.length;
+        const dType = WORDS[nx].length * TYPE;
+        SEGS.push({ type: 'type', s: acc, d: dType, w: nx });          acc += dType;
+        SEGS.push({ type: 'post', s: acc, d: POST, w: nx });           acc += POST;
+      }
+      PERIOD = acc;
+    })();
+
+    let lastStr = null;
+    let lastOn  = null;
+
+    function updateText(t) {
+      const p = ((t % PERIOD) + PERIOD) % PERIOD;
+      let seg = SEGS[SEGS.length - 1];
+      for (let i = 0; i < SEGS.length; i++) {
+        const s = SEGS[i];
+        if (p >= s.s && p < s.s + s.d) { seg = s; break; }
+      }
+      const local = p - seg.s;
+      const w = WORDS[seg.w];
+      let str = '';
+      let on = true;
+      if (seg.type === 'hold') {
+        str = w;
+        on = Math.floor(local / BLINK) % 2 === 0;
+      } else if (seg.type === 'del') {
+        str = w.slice(0, Math.floor(w.length * (1 - local / seg.d)));
+      } else if (seg.type === 'empty') {
+        str = '';
+      } else if (seg.type === 'type') {
+        str = w.slice(0, Math.min(w.length, Math.floor(local / TYPE)));
+      } else {
+        str = w;
+        on = Math.floor(local / BLINK) % 2 === 0;
+      }
+      if (str !== lastStr) { typedEl.textContent = str; lastStr = str; }
+      const o = on ? '1' : '0';
+      if (o !== lastOn) { caretEl.style.opacity = o; lastOn = o; }
+    }
+
+    const params = new URLSearchParams(location.search);
+    const isRec  = params.get('rec') === '1';
+    let recAnim = null;
+    let clockEl = null;
+
+    if (isRec) {
+      clockEl = document.createElement('div');
+      clockEl.id = 'rec-clock-' + opts.frameId;
+      clockEl.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;';
+      document.body.appendChild(clockEl);
+      recAnim = clockEl.animate(
+        [{ transform: 'translateX(0px)' }, { transform: 'translateX(100000px)' }],
+        { duration: 100000, iterations: 1, fill: 'both', easing: 'linear' }
+      );
+      recAnim.pause();
+      recAnim.currentTime = 0;
+    }
+
+    function getTime() {
+      if (recAnim) {
+        const ct = recAnim.currentTime;
+        return typeof ct === 'number' ? ct : 0;
+      }
+      return performance.now();
+    }
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let rafId = 0;
+    let running = false;
+    let inView = true;
+    let tabHidden = false;
+
+    function loop() {
+      rafId = requestAnimationFrame(loop);
+      px += (ptrTX - px) * 0.05;
+      py += (ptrTY - py) * 0.05;
+      const t = getTime() / 1000;
+      render(t);
+      updateText(t);
+    }
+    function start() {
+      if (running) return;
+      running = true;
+      rafId = requestAnimationFrame(loop);
+    }
+    function stop() {
+      running = false;
+      cancelAnimationFrame(rafId);
+    }
+    function syncLoop() {
+      if (reduced) return;
+      if (isRec) { start(); return; }
+      if (inView && !tabHidden) start();
+      else stop();
+    }
+
+    document.addEventListener('visibilitychange', function () {
+      tabHidden = document.hidden;
+      syncLoop();
+    });
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        inView = entries[0].isIntersecting;
+        syncLoop();
+      }, { threshold: 0 }).observe(frameEl);
+    }
+
+    resize();
+    if (reduced) {
+      typedEl.textContent = WORDS[0];
+      caretEl.style.opacity = '1';
+      render(0);
+    } else {
+      syncLoop();
+    }
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { resize(); }).observe(frameEl);
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { resize(); });
+    }
+
+    return {
+      resize: resize,
+      destroy: function () {
+        stop();
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerleave', onPointerLeave);
+        window.removeEventListener('resize', resize);
+        if (clockEl && clockEl.parentNode) clockEl.parentNode.removeChild(clockEl);
+      }
+    };
+  }
+
+  // Boot only the Hero ring controller
+  createRingController({
+    frameId: 'hero-frame',
+    canvasId: 'ring-hero',
+    heroId: 'hero-content',
+    typedId: 'typed-hero',
+    caretId: 'caret-hero',
+    words: ['Memory', 'Context', 'Recall']
+  });
+
+})();
+</script>
+
+<!-- ============================================================
+     SOLACE SCRIPTS
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  // accordion: one answer open at a time
+  const qs = [...document.querySelectorAll('#solace-page .q')];
+  qs.forEach(q => q.querySelector('button').onclick = () => {
+    const open = q.hasAttribute('data-open');
+    qs.forEach(o => {
+      o.removeAttribute('data-open');
+      o.querySelector('button').setAttribute('aria-expanded', 'false');
+    });
+    if (!open) {
+      q.setAttribute('data-open', '');
+      q.querySelector('button').setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  // halftone dot field
+  const cv = document.getElementById('dots');
+  const ctx = cv.getContext('2d');
+  const calm = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let W = 0, H = 0, dpr = 1, step = 0, cols = 0, rows = 0, seed = [];
+  let mx = -9999, my = -9999, tmx = -9999, tmy = -9999;
+  const hash = (i, j) => { let h = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return h - Math.floor(h); };
+
+  function size() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = cv.clientWidth;
+    H = cv.clientHeight;
+    cv.width = W * dpr;
+    cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    step = Math.max(14, Math.min(W / 1600, H / 940) * 20.5);
+    cols = Math.ceil(W / step) + 1;
+    rows = Math.ceil(H / step) + 1;
+    seed = [];
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        seed.push([hash(i, j), hash(i + 71, j + 13), hash(i + 9, j + 97)]);
+      }
+    }
+  }
+  addEventListener('resize', size);
+  size();
+  addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect();
+    tmx = e.clientX - r.left;
+    tmy = e.clientY - r.top;
+  });
+  document.addEventListener('pointerleave', () => { tmx = tmy = -9999; });
+
+  const C0 = [226, 106, 24], C1 = [248, 150, 64], C2 = [255, 214, 170];
+  const mix = (a, b, t) => a.map((v, k) => Math.round(v + (b[k] - v) * t));
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    mx += (tmx - mx) * .12;
+    my += (tmy - my) * .12;
+    const top = H * .1, full = H * .36, R = step * .37;
+    for (let j = 0; j < rows; j++) {
+      const y = j * step + step * .5;
+      if (y < top - step * 2) continue;
+      const v = Math.min(1, Math.max(0, (y - top) / (full - top)));
+      const col = v < .55 ? mix(C0, C1, v / .55) : mix(C1, C2, (v - .55) / .45 * .85 + Math.max(0, (y - H * .9) / (H * .1)) * .15);
+      ctx.fillStyle = `rgb(${col[0]},${col[1]},${col[2]})`;
+      for (let i = 0; i < cols; i++) {
+        const x = i * step + step * .5, [a, b, c] = seed[j * cols + i];
+        const wave = calm ? .7 : .5 + .5 * Math.sin(t * (1.6 + b * 2.6) + a * 6.283 + Math.sin(t * .7 + i * .21 + j * .13) * 1.4);
+        const keep = Math.min(1, v * 1.6 + .12) - (a * .6);
+        if (keep <= 0 && c > .08) continue;
+        let s = (.42 + .58 * Math.pow(wave, 1.3)) * Math.min(1, .5 + v * .6) * (keep > 0 ? 1 : .8);
+        const dx = x - mx, dy = y - my, d2 = dx * dx + dy * dy, hov = Math.exp(-d2 / (step * step * 22));
+        s = Math.min(1.05, s + hov * .7);
+        const r = R * s;
+        if (r < .6) continue;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, 6.2832);
+        ctx.fill();
+      }
+    }
+  }
+  function loop(ms) { draw(ms / 1000); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+
+})();
+</script>
+
+</body>
+</html>
