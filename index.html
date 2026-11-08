@@ -3,54 +3,190 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Synra — a memory your AI keeps</title>
-<meta name="description" content="Synra is a memory OS for your AI tools. Persistent context across Cursor, Claude, and ChatGPT. Sign in and start remembering in seconds.">
+<title>Synra — The AI Engineering Brain · Persistent Memory Layer</title>
+<meta name="description" content="Synra is the AI Engineering Brain. A persistent, evidence-backed memory layer that gives Cursor, Claude, and ChatGPT a shared understanding of how your company builds software.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
-     FONT IMPORT (must be first)
-     ============================================================ */
-  @import url(https://db.onlinewebfonts.com/c/e55e9079ee863276569c8a68d776ef04?family=Futura+Md+BT+Medium);
-
-  /* ============================================================
-     SYNRA STYLES
+     GLOBAL VARIABLES & RESET
      ============================================================ */
   :root {
     --u: 1px;
     --shift: 0px;
-  }
-  *, *::before, *::after { box-sizing: border-box; }
-  html { height: 100%; scroll-behavior: smooth; }
-  html, body { margin: 0; }
-  body {
-    min-height: 100%;
-    background: #000;
-    color: #fff;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    --bg: #000000;
+    --surface: #0a0a0c;
+    --surface-card: rgba(255, 255, 255, 0.02);
+    --border: rgba(255, 255, 255, 0.07);
+    --border-hover: rgba(255, 255, 255, 0.16);
+    --fg: #f5f5f7;
+    --fg-muted: #86868b;
+    --fg-subtle: #48484a;
+    --gold: #d4af37;
+    --gold-glow: rgba(212, 175, 55, 0.25);
+    --accent: #ff8a50;
+    --cyan: #00f3ff;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-geist: 'Geist', var(--font-sans);
+    --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
   }
 
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    height: 100%;
+    scroll-behavior: smooth;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100%;
+    background-color: var(--bg);
+    color: var(--fg);
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+
+  ::selection {
+    background: #f5f5f7;
+    color: #000;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  ul { list-style: none; }
+
+  /* ============================================================
+     NAVIGATION BAR
+     ============================================================ */
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4vw;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  .nav.scrolled {
+    background: rgba(0, 0, 0, 0.88);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #fff;
+    user-select: none;
+  }
+  .brand svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+    align-items: center;
+    gap: 28px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--fg-muted);
+  }
+  @media (min-width: 900px) {
+    .nav-links { display: flex; }
+  }
+  .nav-links a {
+    transition: color 0.2s ease;
+  }
+  .nav-links a:hover {
+    color: #fff;
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .btn-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    padding: 0 16px;
+    border-radius: 9999px;
+    background: #fff;
+    color: #000;
+    font-size: 13px;
+    font-weight: 500;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  }
+  .btn-nav:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+  }
+
+  /* ============================================================
+     SECTION 1: HERO WITH KINETIC RING CANVAS
+     ============================================================ */
   .ring-section {
     position: relative;
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
   }
 
   .frame {
-    position: absolute;
-    inset: 7.2vh 5vw;
-    border: 1px solid rgba(255,255,255,.09);
-    border-radius: calc(14 * var(--u));
+    position: relative;
+    width: 92vw;
+    max-width: 1400px;
+    height: 82vh;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
     overflow: hidden;
     background: #000;
     isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   .ring-canvas {
@@ -60,99 +196,39 @@
     width: 100%;
     height: 100%;
     z-index: 1;
-  }
-
-  .nav {
-    position: absolute;
-    top: calc(24 * var(--u));
-    left: calc(26 * var(--u));
-    right: calc(24 * var(--u));
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 3;
     pointer-events: none;
   }
-  .nav > * { pointer-events: auto; }
 
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: calc(9 * var(--u));
-    color: #fff;
-    font-size: calc(17.5 * var(--u));
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    user-select: none;
-    text-decoration: none;
-  }
-  .logo {
-    display: block;
-    width: calc(20 * var(--u));
-    height: calc(20 * var(--u));
-    flex: 0 0 auto;
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 20px;
+    max-width: 960px;
+    margin-top: 80px;
   }
 
-  .nav-right {
-    display: flex;
-    align-items: center;
-    gap: calc(4 * var(--u));
-  }
-
-  .pill {
-    display: flex;
-    align-items: center;
-    gap: calc(18 * var(--u));
-    height: calc(29 * var(--u));
-    padding: 0 calc(14 * var(--u));
-    border-radius: calc(8 * var(--u));
-    background: rgba(150,150,150,.38);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    font-size: calc(14 * var(--u));
-    line-height: 1;
-  }
-  .pill a {
-    color: rgba(255,255,255,.9);
-    text-decoration: none;
-    font-weight: 400;
-    white-space: nowrap;
-    transition: color .16s ease;
-  }
-  .pill a:hover { color: #fff; }
-
-  .connect {
+  .hero-badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    height: calc(29 * var(--u));
-    padding: 0 calc(14 * var(--u));
-    border: none;
-    border-radius: calc(8 * var(--u));
-    background: #fff;
-    color: #0a0a0a;
-    font-family: inherit;
-    font-size: calc(14 * var(--u));
-    font-weight: 500;
-    line-height: 1;
-    text-decoration: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: transform .18s cubic-bezier(.22,.61,.36,1), box-shadow .18s ease;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 24px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(8px);
   }
-  .connect:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(255,255,255,.18);
-  }
-  .connect:active { transform: translateY(0); }
-
-  .hero {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc(420 * var(--u) + var(--shift));
-    text-align: center;
-    z-index: 2;
+  .hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ff7a4c;
+    box-shadow: 0 0 8px #ff7a4c;
   }
 
   .headline {
@@ -160,21 +236,16 @@
     align-items: center;
     justify-content: center;
     margin: 0;
-    font-size: calc(176 * var(--u));
-    line-height: 1;
+    font-size: clamp(3rem, 9.5vw, 9.2rem);
+    line-height: 0.95;
     font-weight: 600;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.04em;
   }
 
   .word {
     display: block;
     white-space: pre;
-    background: linear-gradient(12deg,
-      #fffaf6 28%,
-      #ffe6d6 46%,
-      #ffbc98 66%,
-      #ff8f62 88%,
-      #ff7a4c 100%);
+    background: linear-gradient(12deg, #fffaf6 28%, #ffe6d6 46%, #ffbc98 66%, #ff8f62 88%, #ff7a4c 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -184,434 +255,1579 @@
   .caret {
     display: block;
     flex: 0 0 auto;
-    width: calc(1.6 * var(--u));
-    height: calc(124 * var(--u));
-    margin-left: calc(7 * var(--u));
-    border-radius: calc(1 * var(--u));
+    width: 3px;
+    height: clamp(2.2rem, 7vw, 6.5rem);
+    margin-left: 8px;
+    border-radius: 2px;
     background: #ffb48c;
-    box-shadow: 0 0 calc(10 * var(--u)) rgba(255,150,110,.55);
+    box-shadow: 0 0 16px rgba(255, 150, 110, 0.7);
   }
 
-  .subline {
-    margin: calc(26 * var(--u)) 0 0;
-    font-size: calc(18 * var(--u));
-    line-height: calc(24 * var(--u));
-    font-weight: 400;
-    color: rgba(255,255,255,.92);
-    letter-spacing: -0.005em;
+  .hero-subhead {
+    margin: 28px auto 0;
+    max-width: 680px;
+    font-size: clamp(16px, 2.2vw, 21px);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.88);
+    letter-spacing: -0.01em;
   }
 
-  .cta {
+  .hero-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 32px;
+  }
+
+  .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-top: calc(19 * var(--u));
-    height: calc(41 * var(--u));
-    padding: 0 calc(17 * var(--u));
-    border: none;
-    border-radius: calc(10 * var(--u));
+    height: 46px;
+    padding: 0 28px;
+    border-radius: 999px;
     background: #fff;
-    color: #0a0a0a;
-    font-family: inherit;
-    font-size: calc(15 * var(--u));
+    color: #000;
+    font-size: 14px;
     font-weight: 500;
-    line-height: 1;
-    text-decoration: none;
-    cursor: pointer;
-    transition: transform .2s cubic-bezier(.22,.61,.36,1), box-shadow .2s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
   }
-  .cta:hover {
+  .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow:
-      0 calc(10 * var(--u)) calc(34 * var(--u)) rgba(255,120,60,.45),
-      0 0 calc(70 * var(--u)) rgba(255,90,40,.28);
-  }
-  .cta:active { transform: translateY(0); }
-
-  .platforms {
-    margin: calc(12 * var(--u)) 0 0;
-    font-size: calc(13 * var(--u));
-    line-height: 1.2;
-    color: rgba(255,255,255,.5);
-    letter-spacing: 0;
-  }
-  .platforms a {
-    color: rgba(255,255,255,.78);
-    text-decoration: none;
-    transition: color .16s ease;
-  }
-  .platforms a:hover { color: #fff; }
-
-  .benefits-section {
-    position: relative;
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    background: #000;
-    padding: 3rem 1rem;
-    font-family: 'Futura Md BT Medium', system-ui, -apple-system, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: #fff;
-  }
-  @media (min-width: 640px) { .benefits-section { padding: 5rem 1.5rem; } }
-  @media (min-width: 768px) { .benefits-section { padding: 5rem 2.5rem; } }
-
-  .benefits-heading {
-    color: #fff;
-    font-size: 1.875rem;
-    font-weight: 300;
-    text-align: center;
-    line-height: 1.1;
-    letter-spacing: -0.04em;
-    margin: 0 0 3rem;
-  }
-  @media (min-width: 640px) { .benefits-heading { font-size: 2.25rem; margin-bottom: 6rem; } }
-  @media (min-width: 768px) { .benefits-heading { font-size: 3rem; } }
-
-  .benefits-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-  @media (min-width: 640px) { .benefits-grid { gap: 1rem; } }
-  @media (min-width: 768px) { .benefits-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-
-  .benefit-card {
-    position: relative;
-    height: 380px;
-    border-radius: 1rem;
-    background: #0a0a0a;
-    overflow: hidden;
-  }
-  @media (min-width: 640px) { .benefit-card { height: 460px; } }
-
-  .benefit-card--pad { padding: 1.5rem; }
-  @media (min-width: 640px) { .benefit-card--pad { padding: 2rem; } }
-
-  .benefit-blob {
-    position: absolute;
-    border-radius: 9999px;
-    background: #1e3a8a;
-    filter: blur(64px);
-    opacity: 0.4;
-    pointer-events: none;
-  }
-  .benefit-blob--left {
-    top: 50%;
-    transform: translateY(-50%);
-    left: -420px;
-    width: 460px;
-    height: 460px;
-  }
-  .benefit-blob--tr {
-    top: -7rem;
-    right: -7rem;
-    width: 14rem;
-    height: 14rem;
+    box-shadow: 0 10px 30px rgba(255, 120, 60, 0.35);
   }
 
-  .benefit-content {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .benefit-title {
-    color: #fff;
-    font-size: 1.25rem;
-    font-weight: 300;
-    line-height: 1.25;
-    margin: 0;
-  }
-  @media (min-width: 640px) { .benefit-title { font-size: 1.5rem; } }
-
-  .benefit-body {
-    font-size: 13px;
-    line-height: 1.625;
-    color: rgba(255,255,255,.7);
-    font-weight: 300;
-    margin: 3rem 0 0;
-    max-width: 280px;
-  }
-  @media (min-width: 640px) {
-    .benefit-body { font-size: 14px; margin-top: 5rem; }
-  }
-
-  .benefit-body--bottom { margin: auto 0 0; max-width: 320px; }
-
-  .benefit-card--video { display: flex; flex-direction: column; padding: 0; }
-  .benefit-video-wrap {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    height: 75%;
-    flex-shrink: 0;
-  }
-  .benefit-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .benefit-video-fade {
-    pointer-events: none;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 8rem;
-    background: linear-gradient(to bottom, rgba(10,10,10,0), #0a0a0a);
-  }
-  .benefit-video-text {
-    flex: 1 1 auto;
-    display: flex;
+  .btn-ghost {
+    display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
-    padding: 1.5rem;
+    gap: 6px;
+    height: 46px;
+    padding: 0 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 400;
+    backdrop-filter: blur(8px);
+    transition: border-color 0.2s ease, background 0.2s ease;
   }
-  @media (min-width: 640px) { .benefit-video-text { padding: 2rem; } }
-  .benefit-video-text .benefit-title { text-align: left; }
-
-  @media (max-width: 767px) {
-    .frame { inset: 10px; }
-    .pill { display: none; }
-    .headline { font-size: min(calc(176 * var(--u)), 22vw); }
-    .caret {
-      height: calc(124 * var(--u) * 0.5);
-      width: max(2px, calc(1.6 * var(--u)));
-      margin-left: calc(5 * var(--u));
-    }
-    .subline { font-size: 15px; line-height: 21px; margin-top: calc(20 * var(--u)); }
-    .brand { font-size: max(15px, calc(17.5 * var(--u))); }
-    .connect {
-      height: max(34px, calc(29 * var(--u)));
-      font-size: max(13px, calc(14 * var(--u)));
-      padding: 0 max(16px, calc(14 * var(--u)));
-      border-radius: max(9px, calc(8 * var(--u)));
-    }
-    .cta {
-      height: max(44px, calc(41 * var(--u)));
-      font-size: max(14px, calc(15 * var(--u)));
-      padding: 0 max(22px, calc(17 * var(--u)));
-      border-radius: max(11px, calc(10 * var(--u)));
-    }
-    .platforms { font-size: 12px; }
+  .btn-ghost:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.08);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .connect, .cta, .pill a, .platforms a { transition: none; }
+  .hero-meta {
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--fg-muted);
+    letter-spacing: 0.02em;
   }
 
   /* ============================================================
-     SOLACE STYLES (SCOPED TO #solace-page)
+     CONTENT CONTAINERS & SECTION STYLING
      ============================================================ */
-  #solace-page {
-    --u: min(calc(100vw/1600), calc(100vh/940));
-    --cream: #fbefe2;
-    --mid: #d9c3ad;
-    --line: rgba(255,214,170,.14);
-    --glass: rgba(34,18,8,.42);
-    background: #050302;
-    color: var(--cream);
-    font-family: Geist, system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
+  .section {
+    position: relative;
+    padding: 120px 6vw;
+    border-top: 1px solid var(--border);
   }
-  #solace-page * { box-sizing: border-box; margin: 0; padding: 0; }
-  #solace-page a { color: inherit; text-decoration: none; }
-  #solace-page button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
-  #solace-page ul { list-style: none; }
+  @media (min-width: 768px) {
+    .section { padding: 160px 6vw; }
+  }
 
-  #solace-page .wrap { position: relative; min-height: 100svh; overflow: hidden; background: #050302; }
-  #solace-page #dots { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-  #solace-page .content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; min-height: 100svh; padding: calc(64*var(--u)) calc(28*var(--u)) calc(28*var(--u)); }
-  #solace-page h2 { font-size: calc(40*var(--u)); font-weight: 600; letter-spacing: -.02em; text-align: center; }
-  #solace-page .faq { width: calc(688*var(--u)); margin-top: calc(22*var(--u)); padding: calc(4*var(--u)) calc(21*var(--u)); background: var(--glass); border: 1px solid rgba(255,190,120,.14); border-radius: calc(6*var(--u)); -webkit-backdrop-filter: blur(calc(10*var(--u))); backdrop-filter: blur(calc(10*var(--u))); box-shadow: 0 calc(20*var(--u)) calc(60*var(--u)) rgba(0,0,0,.45); }
-  #solace-page .q { border-bottom: 1px solid var(--line); }
-  #solace-page .q:last-child { border-bottom: 0; }
-  #solace-page .q button { display: flex; align-items: center; justify-content: space-between; gap: calc(20*var(--u)); width: 100%; padding: calc(17*var(--u)) 0; font-size: calc(17*var(--u)); font-weight: 500; letter-spacing: -.005em; }
-  #solace-page .q svg { flex: none; width: calc(14*var(--u)); height: calc(14*var(--u)); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
-  #solace-page .q[data-open] svg { transform: rotate(180deg); }
-  #solace-page .a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s cubic-bezier(.2,.8,.2,1); }
-  #solace-page .q[data-open] .a { grid-template-rows: 1fr; }
-  #solace-page .a>div { overflow: hidden; }
-  #solace-page .a p { padding: 0 calc(20*var(--u)) calc(20*var(--u)) 0; font-size: calc(15*var(--u)); line-height: 1.6; color: var(--mid); }
-  #solace-page footer { width: 100%; margin-top: auto; display: grid; grid-template-columns: 1fr auto; gap: calc(40*var(--u)); padding: calc(46*var(--u)) calc(64*var(--u)) calc(44*var(--u)); background: linear-gradient(180deg, rgba(40,20,8,.5), rgba(84,40,14,.44)); border: 1px solid rgba(255,190,120,.12); border-radius: calc(6*var(--u)); -webkit-backdrop-filter: blur(calc(12*var(--u))); backdrop-filter: blur(calc(12*var(--u))); }
-  #solace-page .brand { display: flex; align-items: center; gap: calc(14*var(--u)); font-size: calc(25*var(--u)); font-weight: 500; letter-spacing: -.02em; }
-  #solace-page .mark { display: grid; place-items: center; width: calc(38*var(--u)); height: calc(38*var(--u)); background: var(--cream); border-radius: calc(2*var(--u)); }
-  #solace-page .mark svg { width: 56%; height: 56%; fill: #1b0d05; }
-  #solace-page .tag { margin-top: calc(20*var(--u)); max-width: calc(440*var(--u)); font-size: calc(15*var(--u)); line-height: 1.6; color: #f0dcc6; }
-  #solace-page .social { display: flex; gap: calc(16*var(--u)); margin-top: calc(26*var(--u)); }
-  #solace-page .social a { display: grid; place-items: center; width: calc(26*var(--u)); height: calc(26*var(--u)); opacity: .9; transition: opacity .2s; }
-  #solace-page .social a:hover { opacity: .6; }
-  #solace-page .social svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-  #solace-page .copy { margin-top: calc(34*var(--u)); font-size: calc(14*var(--u)); color: #ecd8c2; }
-  #solace-page .links { display: grid; grid-template-columns: repeat(3, calc(196*var(--u))); gap: calc(8*var(--u)); }
-  #solace-page .links h3 { font-size: calc(15*var(--u)); font-weight: 600; margin-bottom: calc(16*var(--u)); }
-  #solace-page .links li { margin-bottom: calc(11*var(--u)); font-size: calc(14.5*var(--u)); color: #ead5be; }
-  #solace-page .links a { transition: color .2s; }
-  #solace-page .links a:hover { color: #fff; }
-  #solace-page button:focus-visible, #solace-page a:focus-visible { outline: 2px solid var(--cream); outline-offset: 3px; }
+  .container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
 
-  @media (max-width: 820px) {
-    #solace-page { --u: 1px; }
-    #solace-page .content { padding: 48px 16px 16px; }
-    #solace-page h2 { font-size: 32px; }
-    #solace-page .faq { width: 100%; margin-top: 20px; }
-    #solace-page footer { grid-template-columns: 1fr; padding: 32px 24px; margin-top: 64px; }
-    #solace-page .links { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
+  .section-tag {
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    margin-bottom: 24px;
+  }
+
+  .section-tag.gold {
+    color: var(--gold);
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 5vw, 4.2rem);
+    line-height: 1.05;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    color: var(--fg);
+    max-width: 900px;
+  }
+
+  .section-desc {
+    margin-top: 24px;
+    font-size: clamp(15px, 1.8vw, 19px);
+    line-height: 1.6;
+    color: var(--fg-muted);
+    max-width: 720px;
+    letter-spacing: -0.01em;
+  }
+
+  /* ============================================================
+     SECTION 2: THESIS / MANIFESTO
+     ============================================================ */
+  .manifesto-box {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .manifesto-title {
+    font-size: clamp(2rem, 4.6vw, 3.8rem);
+    line-height: 1.12;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: #f5f5f7;
+  }
+  .manifesto-body {
+    margin-top: 36px;
+    font-size: clamp(16px, 2vw, 21px);
+    line-height: 1.65;
+    color: var(--fg-muted);
+  }
+
+  /* ============================================================
+     SECTION 3: THE PROBLEM & THREE FAILURES
+     ============================================================ */
+  .failures-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 64px;
+  }
+  @media (min-width: 840px) {
+    .failures-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .failure-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 380px;
+    padding: 36px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface-card);
+    transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  }
+  .failure-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  }
+
+  .card-top .num {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+  }
+  .card-top .card-heading {
+    margin-top: 20px;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: #f5f5f7;
+    letter-spacing: -0.02em;
+  }
+  .card-desc {
+    margin-top: 40px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--fg-muted);
+  }
+
+  .stat-block {
+    margin-top: 100px;
+    text-align: center;
+  }
+  .stat-number {
+    font-size: clamp(4.5rem, 16vw, 12rem);
+    line-height: 0.85;
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    background: linear-gradient(180deg, #f5f5f7 10%, #606066 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-caption {
+    margin: 28px auto 0;
+    max-width: 580px;
+    font-size: 16px;
+    color: var(--fg-muted);
+    line-height: 1.5;
+  }
+
+  /* ============================================================
+     SECTION 4: SOLUTION & LIVE EVIDENCE TERMINAL
+     ============================================================ */
+  .terminal-card {
+    position: relative;
+    max-width: 860px;
+    margin: 60px auto 0;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: rgba(12, 12, 14, 0.85);
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+  }
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .dot-mac {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+  }
+  .terminal-title {
+    margin-left: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-muted);
+  }
+
+  .terminal-body {
+    padding: 32px 36px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+  .t-comment { color: rgba(255, 255, 255, 0.35); }
+  .t-key { color: #f5f5f7; font-weight: 500; }
+  .t-val { color: rgba(255, 255, 255, 0.55); }
+  .t-accent { color: var(--accent); }
+  .t-success { color: #52e18b; }
+  .t-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 14px;
+    background: #fff;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-top: 80px;
+  }
+  @media (min-width: 840px) {
+    .pillars-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .pillar-item .p-num {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+  }
+  .pillar-item .p-title {
+    margin-top: 14px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #f5f5f7;
+    letter-spacing: -0.01em;
+  }
+  .pillar-item .p-desc {
+    margin-top: 14px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--fg-muted);
+  }
+
+  /* ============================================================
+     SECTION 5: LIVE CONTEXT BRAIN GRAPH
+     ============================================================ */
+  .brain-container {
+    position: relative;
+    width: 100%;
+    margin-top: 48px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: #050507;
+    overflow: hidden;
+  }
+  .brain-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.01);
+    gap: 12px;
+  }
+  .brain-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #52e18b;
+    box-shadow: 0 0 10px #52e18b;
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-btn {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--fg-muted);
+    transition: all 0.2s ease;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+  }
+
+  .brain-canvas-wrap {
+    position: relative;
+    width: 100%;
+    height: 520px;
+  }
+  #brain-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .node-inspector {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    max-width: 380px;
+    padding: 18px 22px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(10, 10, 12, 0.92);
+    backdrop-filter: blur(16px);
+    font-size: 12px;
+    line-height: 1.6;
+    pointer-events: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  }
+  .node-inspector .node-lbl {
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .node-inspector .node-sub {
+    color: var(--fg-muted);
+    font-size: 11px;
+    font-family: var(--font-mono);
+  }
+
+  /* ============================================================
+     SECTION 6: FOUR VERSIONS ROADMAP
+     ============================================================ */
+  .versions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 60px;
+  }
+  .version-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 36px 40px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface-card);
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  @media (min-width: 800px) {
+    .version-row {
+      grid-template-columns: 80px 240px 1fr;
+      align-items: baseline;
+    }
+  }
+  .version-row:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.035);
+  }
+  .v-idx {
+    font-size: 48px;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    color: var(--fg-subtle);
+  }
+  .version-row.highlight .v-idx {
+    color: #f5f5f7;
+  }
+  .v-title-wrap h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #f5f5f7;
+    letter-spacing: -0.02em;
+  }
+  .v-title-wrap .v-period {
+    margin-top: 8px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+  .v-desc {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--fg-muted);
+  }
+
+  /* ============================================================
+     SECTION 7: SECURITY & EVIDENCE
+     ============================================================ */
+  .security-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+    margin-top: 64px;
+  }
+  @media (min-width: 960px) {
+    .security-grid {
+      grid-template-columns: 1fr 1.25fr;
+      align-items: start;
+    }
+  }
+  .sec-check-list {
+    margin-top: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .sec-check-item {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-size: 15px;
+    color: #f5f5f7;
+  }
+  .sec-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-muted);
+  }
+
+  .passport-wrap {
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: rgba(14, 14, 18, 0.9);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  }
+
+  /* ============================================================
+     SECTION 8: THE FOUNDER (NABEEL KHAN)
+     ============================================================ */
+  .founder-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+    margin-top: 60px;
+  }
+  @media (min-width: 860px) {
+    .founder-grid {
+      grid-template-columns: 1fr 1.4fr;
+      gap: 72px;
+    }
+  }
+  .founder-name {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+  .founder-role {
+    margin-top: 14px;
+    font-size: 16px;
+    color: var(--gold);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .founder-age {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+  .founder-contacts {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--fg-muted);
+    transition: color 0.2s ease;
+  }
+  .contact-link:hover {
+    color: var(--gold);
+  }
+  .contact-link svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    flex-shrink: 0;
+  }
+
+  .founder-bio {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    font-size: 15.5px;
+    line-height: 1.75;
+    color: var(--fg-muted);
+  }
+  .founder-bio strong {
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .facts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 60px;
+  }
+  @media (min-width: 640px) {
+    .facts-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .fact-card {
+    padding: 24px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface-card);
+    transition: border-color 0.2s ease;
+  }
+  .fact-card:hover {
+    border-color: rgba(212, 175, 55, 0.35);
+  }
+  .fact-tag {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .fact-val {
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .fact-sub {
+    margin-top: 4px;
+    font-size: 12.5px;
+    color: var(--fg-muted);
+  }
+
+  .quote-box {
+    margin-top: 72px;
+    padding-top: 48px;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    text-align: center;
+  }
+  .quote-text {
+    font-size: clamp(1.25rem, 2.8vw, 1.9rem);
+    line-height: 1.4;
+    font-weight: 500;
+    color: #f5f5f7;
+    font-style: italic;
+  }
+  .quote-source {
+    margin-top: 20px;
+    font-size: 11.5px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* ============================================================
+     SECTION 9: ONE MORE THING
+     ============================================================ */
+  .one-more-thing {
+    text-align: center;
+    padding: 180px 6vw;
+  }
+  .omt-title {
+    font-size: clamp(2.4rem, 7.5vw, 6.2rem);
+    line-height: 1.02;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: #fff;
+  }
+  .omt-title .subdued {
+    color: var(--fg-muted);
+  }
+  .omt-sub {
+    margin: 36px auto 0;
+    max-width: 680px;
+    font-size: clamp(16px, 2vw, 21px);
+    line-height: 1.6;
+    color: var(--fg-muted);
+  }
+
+  /* ============================================================
+     SECTION 10: WAITLIST / EARLY ACCESS
+     ============================================================ */
+  .waitlist-box {
+    max-width: 820px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .waitlist-form {
+    margin: 48px auto 0;
+    max-width: 520px;
+  }
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  @media (min-width: 580px) {
+    .form-row {
+      flex-direction: row;
+    }
+  }
+  .waitlist-input {
+    flex: 1;
+    min-width: 0;
+    height: 52px;
+    padding: 0 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.04);
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .waitlist-input:focus {
+    border-color: rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.07);
+  }
+  .waitlist-btn {
+    height: 52px;
+    padding: 0 32px;
+    border-radius: 999px;
+    background: #fff;
+    color: #000;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  }
+  .waitlist-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 255, 255, 0.25);
+  }
+  .form-hint {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+
+  /* ============================================================
+     SECTION 11: FAQ
+     ============================================================ */
+  .faq-accordion {
+    max-width: 860px;
+    margin: 54px auto 0;
+    border-top: 1px solid var(--border);
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .faq-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 24px 0;
+    text-align: left;
+    font-size: clamp(16px, 2vw, 19px);
+    font-weight: 500;
+    color: #f5f5f7;
+    letter-spacing: -0.01em;
+  }
+  .faq-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    fill: none;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .faq-item[data-open] .faq-btn svg {
+    transform: rotate(180deg);
+  }
+  .faq-ans {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .faq-item[data-open] .faq-ans {
+    grid-template-rows: 1fr;
+  }
+  .faq-ans-inner {
+    overflow: hidden;
+  }
+  .faq-ans-inner p {
+    padding-bottom: 24px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--fg-muted);
+  }
+
+  /* ============================================================
+     FOOTER WITH ANIMATED HALFTONE CANVAS
+     ============================================================ */
+  .footer-wrap {
+    position: relative;
+    background: #050302;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 190, 120, 0.12);
+  }
+  #footer-dots {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    opacity: 0.65;
+  }
+  .footer-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 80px 6vw 48px;
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  @media (min-width: 860px) {
+    .footer-top {
+      grid-template-columns: 1.4fr repeat(3, 1fr);
+    }
+  }
+  .footer-brand {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+  .footer-tagline {
+    margin-top: 14px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.7);
+    max-width: 320px;
+  }
+  .footer-social {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .footer-social a {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .footer-social a:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  .footer-social svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+  }
+
+  .footer-col h4 {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 18px;
+    font-weight: 600;
+  }
+  .footer-col li {
+    margin-bottom: 11px;
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.65);
+  }
+  .footer-col a:hover {
+    color: #fff;
+  }
+
+  .footer-bottom {
+    margin-top: 60px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  @media (min-width: 640px) {
+    .footer-bottom {
+      flex-direction: row;
+    }
+  }
+
+  /* ============================================================
+     TOAST NOTIFICATION
+     ============================================================ */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 14px 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(18, 18, 22, 0.95);
+    color: #fff;
+    font-size: 13.5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    transform: translateY(120%);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
   }
 </style>
 </head>
 <body>
 
 <!-- ============================================================
-     SECTION 1 — HERO (Synra)
+     TOP NAVIGATION BAR
      ============================================================ -->
-<section class="ring-section" id="hero-section">
+<header class="nav" id="main-nav">
+  <a class="brand" href="#hero" aria-label="Synra Home">
+    <svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+      <path d="M10 1.6 L15.9 6.1 L10 10.6 L4.1 6.1 Z"/>
+      <path d="M4.1 11.1 L10 18.4 L15.9 11.1"/>
+    </svg>
+    <span>Synra</span>
+  </a>
+
+  <nav class="nav-links" aria-label="Primary Navigation">
+    <a href="#thesis">Thesis</a>
+    <a href="#problem">Problem</a>
+    <a href="#solution">Solution</a>
+    <a href="#brain">Context Brain</a>
+    <a href="#versions">Versions</a>
+    <a href="#security">Security</a>
+    <a href="#founder">Founder</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+
+  <div class="nav-actions">
+    <a class="btn-nav" href="#waitlist">Request Access</a>
+  </div>
+</header>
+
+<!-- ============================================================
+     SECTION 1: HERO WITH KINETIC RING CANVAS
+     ============================================================ -->
+<section class="ring-section" id="hero">
   <div class="frame" id="hero-frame">
-    <canvas class="ring-canvas" id="ring-hero" aria-hidden="true"></canvas>
+    <canvas class="ring-canvas" id="ring-canvas" aria-hidden="true"></canvas>
 
-    <header class="nav">
-      <a class="brand" href="#hero-section" aria-label="Synra home">
-        <svg class="logo" viewBox="0 0 20 20" fill="none"
-             stroke="#fff" stroke-width="1.7"
-             stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
-          <path d="M10 1.6 L15.9 6.1 L10 10.6 L4.1 6.1 Z"/>
-          <path d="M4.1 11.1 L10 18.4 L15.9 11.1"/>
-        </svg>
-        <span>Synra</span>
-      </a>
-      <div class="nav-right">
-        <nav class="pill" aria-label="Primary">
-          <a href="#benefits">Features</a>
-          <a href="#benefits">Docs</a>
-        </nav>
-        <a class="connect" href="#solace-page">Launch</a>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        <span>The AI Engineering Brain · Persistent Memory Layer</span>
       </div>
-    </header>
 
-    <div class="hero" id="hero-content">
       <h1 class="headline">
         <span class="word" id="typed-hero">Memory</span>
         <span class="caret" id="caret-hero"></span>
       </h1>
-      <p class="subline">
-        Your AI forgets everything. Synra doesn't.<br>
-        Local-first persistent context for Cursor, Claude, and ChatGPT.
+
+      <p class="hero-subhead">
+        Your AI forgets everything across chats, PRs, and tools. Synra doesn't.<br>
+        The persistent, evidence-backed memory layer that gives Cursor, Claude, and Codex a shared understanding of your codebase.
       </p>
-      <a class="cta" href="#solace-page">Open Synra</a>
-      <p class="platforms">Runs locally via Ollama · Obsidian-style Markdown Vault · MCP Server</p>
+
+      <div class="hero-buttons">
+        <a class="btn-primary" href="#waitlist">Request Early Access</a>
+        <a class="btn-ghost" href="#solution">
+          <span>Explore Architecture</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </div>
+
+      <p class="hero-meta">
+        AST-anchored · Local-first · Model-agnostic MCP Server · SARIF Passports
+      </p>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SECTION 2 — KEY BENEFITS (Synra)
+     SECTION 2: OUR THESIS / MANIFESTO
      ============================================================ -->
-<section class="benefits-section" id="benefits" aria-labelledby="benefits-heading">
-  <h2 class="benefits-heading" id="benefits-heading">Key Benefits</h2>
-
-  <div class="benefits-grid">
-
-    <article class="benefit-card benefit-card--pad">
-      <div class="benefit-blob benefit-blob--left" aria-hidden="true"></div>
-      <div class="benefit-content">
-        <h3 class="benefit-title">
-          Persistent Context<br>Across Every Tool
-        </h3>
-        <p class="benefit-body">
-          Synra integrates with Cursor and Claude via its MCP Server, and captures web chats via a Chrome Extension. It remembers your architecture, codebase, and past decisions, retrieving the right knowledge the moment you need it.
-        </p>
-      </div>
-    </article>
-
-    <article class="benefit-card benefit-card--video">
-      <div class="benefit-video-wrap" style="height:75%">
-        <video
-          class="benefit-video"
-          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260421_072701_f6a01abb-eb30-4559-9d6e-774362defbc3.mp4"
-          autoplay loop muted playsinline></video>
-        <div class="benefit-video-fade" aria-hidden="true"></div>
-      </div>
-      <div class="benefit-video-text">
-        <h3 class="benefit-title">
-          Dual-Write Storage<br>Local-First Vault
-        </h3>
-      </div>
-    </article>
-
-    <article class="benefit-card benefit-card--pad">
-      <div class="benefit-blob benefit-blob--tr" aria-hidden="true"></div>
-      <div class="benefit-content">
-        <h3 class="benefit-title">
-          Anatomical Brain Graph<br>Of Your Knowledge
-        </h3>
-        <p class="benefit-body benefit-body--bottom">
-          Synra uses a local LLM to extract concepts as [[wikilinks]] and maps them to a 4K Canvas2D anatomical brain. Your knowledge compounds, visualized by Frontal, Temporal, and Parietal regions, not just a list.
-        </p>
-      </div>
-    </article>
-
+<section class="section" id="thesis">
+  <div class="container">
+    <div class="manifesto-box">
+      <p class="section-tag">Our Thesis</p>
+      <h2 class="manifesto-title">
+        Software generation has accelerated faster than software understanding.
+      </h2>
+      <p class="manifesto-body">
+        For thirty years, engineering governance was pre-code. Requirements were written, reviewed, and approved before a single line was shipped. Generative AI inverted that sequence. Now, code arrives in seconds — and verification is the existential bottleneck.
+      </p>
+    </div>
   </div>
 </section>
 
 <!-- ============================================================
-     SECTION 3 — SOLACE FAQ & FOOTER
+     SECTION 3: CHAPTER ONE — THE PROBLEM
      ============================================================ -->
-<div id="solace-page">
-  <main class="wrap">
-    <canvas id="dots" aria-hidden="true"></canvas>
-    <div class="content">
-      <h2>Questions, answered</h2>
-      <div class="faq" id="faq">
-        <div class="q" data-open><button aria-expanded="true">What exactly is Synra?<svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg></button><div class="a"><div><p>Synra is a local-first AI context OS. It acts as a persistent memory layer for your AI tools, combining an Obsidian-style Markdown vault, a local LLM, and an anatomical brain graph.</p></div></div></div>
-        <div class="q"><button aria-expanded="false">How does it remember my context?<svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg></button><div class="a"><div><p>Every memory is dual-written to a Supabase database and saved as a local .md file in your synra-vault folder. A local Llama 3.2 model parses your conversations and extracts [[wikilinks]] to connect the dots.</p></div></div></div>
-        <div class="q"><button aria-expanded="false">Is my data private?<svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg></button><div class="a"><div><p>Yes. Unlike other tools, Synra uses your local GPU via Ollama to process LLM requests. Your Markdown files stay on your hard drive, and your database runs on your own Supabase instance. Nothing is used to train third-party models.</p></div></div></div>
-        <div class="q"><button aria-expanded="false">What tools does Synra connect to?<svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg></button><div class="a"><div><p>Synra connects to Cursor and Claude Desktop via an MCP Server. It captures context from ChatGPT and Claude Web via a Chrome Extension. It also features a built-in voice assistant powered by the Web Speech API.</p></div></div></div>
-      </div>
-      <footer>
-        <div>
-          <a class="brand" href="#" aria-label="Synra"><span class="mark"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="14" cy="6" r="3"/><circle cx="6" cy="14" r="3"/><circle cx="14" cy="14" r="3"/></svg></span>Synra</a>
-          <p class="tag">A local-first developer context OS. Persistent memory for AI coding tools, complete with an Obsidian-style vault, local LLM, and anatomical 3D brain graph.</p>
-          <nav class="social" aria-label="Social">
-            <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10v6M8 7.5v.01M12 16v-3.5a2 2 0 0 1 4 0V16M12 10v6"/></svg></a>
-            <a href="#" aria-label="X"><svg viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
-            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17 7v.01"/></svg></a>
-            <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5Z"/></svg></a>
-          </nav>
-          <p class="copy">© Synra 2026 · All rights reserved</p>
+<section class="section" id="problem">
+  <div class="container">
+    <p class="section-tag">Chapter One</p>
+    <h2 class="section-title">
+      Your AI is writing code faster than you can review it.
+    </h2>
+
+    <div class="failures-grid">
+      <article class="failure-card">
+        <div class="card-top">
+          <p class="num">Failure 01</p>
+          <h3 class="card-heading">Contextual amnesia</h3>
         </div>
-        <div class="links">
-          <div><h3>Product</h3><ul><li><a href="#">Overview</a></li><li><a href="#">Voice Assistant</a></li><li><a href="#">Brain Graph</a></li><li><a href="#">Markdown Vault</a></li><li><a href="#">MCP Server</a></li><li><a href="#">Chrome Extension</a></li><li><a href="#">Security</a></li></ul></div>
-          <div><h3>Resources</h3><ul><li><a href="#">Docs</a></li><li><a href="#">Guides</a></li><li><a href="#">API Reference</a></li><li><a href="#">MCP Setup</a></li><li><a href="#">Ollama Setup</a></li></ul></div>
-          <div><h3>Company</h3><ul><li><a href="#">About</a></li><li><a href="#">Customers</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li></ul></div>
+        <p class="card-desc">
+          Every AI session starts from zero. Developers re-explain architecture, API schemas, and past bug fixes into prompt windows — quietly eroding the productivity gains AI was supposed to deliver.
+        </p>
+      </article>
+
+      <article class="failure-card">
+        <div class="card-top">
+          <p class="num">Failure 02</p>
+          <h3 class="card-heading">Review as bottleneck</h3>
         </div>
-      </footer>
+        <p class="card-desc">
+          A 17-file AI-generated pull request forces a human to manually reconstruct dependency chains. Review defaults to skim-reading — which is how silent logic bugs enter production.
+        </p>
+      </article>
+
+      <article class="failure-card">
+        <div class="card-top">
+          <p class="num">Failure 03</p>
+          <h3 class="card-heading">Tool fragmentation</h3>
+        </div>
+        <p class="card-desc">
+          Knowledge generated in Cursor is invisible to Claude. What Codex learns, ChatGPT never knows. The company’s shared engineering memory fractures across a dozen isolated tools.
+        </p>
+      </article>
     </div>
-  </main>
-</div>
+
+    <div class="stat-block">
+      <p class="section-tag">The Scale of the Shift</p>
+      <div class="stat-number">35%</div>
+      <p class="stat-caption">
+        of pull requests in high-adoption engineering organizations are now AI-authored. GitHub commit volume is projected to grow fourteen-fold.
+      </p>
+    </div>
+  </div>
+</section>
 
 <!-- ============================================================
-     SYNRA SCRIPTS
+     SECTION 4: CHAPTER TWO — THE SOLUTION
+     ============================================================ -->
+<section class="section" id="solution">
+  <div class="container">
+    <div style="text-align: center; margin: 0 auto; max-width: 800px;">
+      <p class="section-tag">Chapter Two</p>
+      <h2 class="section-title" style="margin: 0 auto;">
+        One memory graph.<br><span style="color: var(--fg-muted);">Every AI tool.</span>
+      </h2>
+    </div>
+
+    <!-- Live Evidence Card Terminal -->
+    <div class="terminal-card">
+      <div class="terminal-header">
+        <span class="dot-mac"></span>
+        <span class="dot-mac"></span>
+        <span class="dot-mac"></span>
+        <span class="terminal-title">synra — evidence card · pr_audit.log</span>
+      </div>
+      <div class="terminal-body">
+        <p class="t-comment">// Pull Request #482 · refactor(auth) · target: main</p>
+        <p><span class="t-key">› AST diff parsed</span><span class="t-val"> — 17 files, 4 modules affected (Tree-sitter CST)</span></p>
+        <p><span class="t-key">› Relevant tests identified</span><span class="t-val"> — 3/3 passing · test_auth.py</span></p>
+        <p><span class="t-key">› Semgrep + CodeQL scan</span><span class="t-val"> — 0 critical · 1 medium [suppressed: internal token]</span></p>
+        <p><span class="t-key">› Architecture impact</span><span class="t-val"> — no breaking API change across 12 downstream callers</span></p>
+        <p><span class="t-key">› Memory graph queried</span><span class="t-val"> — 6 historical decisions surfaced from vault</span></p>
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 18px; padding-top: 14px;">
+          <span class="t-success">✓ Security Passport generated</span>
+          <span class="t-val"> — SARIF artifact attached to PR commit</span>
+          <span class="t-cursor"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- The 3 Pillars -->
+    <div class="pillars-grid">
+      <div class="pillar-item">
+        <p class="p-num">01 · Parsing</p>
+        <h3 class="p-title">AST-first, not text-first.</h3>
+        <p class="p-desc">
+          Tree-sitter parses your codebase into Concrete Syntax Trees. We resolve cross-file types and symbol hierarchies deterministically — never through fragile, hallucinating vector embeddings.
+        </p>
+      </div>
+
+      <div class="pillar-item">
+        <p class="p-num">02 · Memory</p>
+        <h3 class="p-title">Persistent property graph.</h3>
+        <p class="p-desc">
+          Architecture, APIs, past PRs, team decisions, and incident history — all stored in a queryable property graph that deepens with every merged commit. Memory that compounds.
+        </p>
+      </div>
+
+      <div class="pillar-item">
+        <p class="p-num">03 · Evidence</p>
+        <h3 class="p-title">SARIF Security Passports.</h3>
+        <p class="p-desc">
+          We never claim code is safe. We prove it. Every AI-generated commit produces a machine-readable audit artifact formatted for SOC 2 and ISO 27001 compliance conversations.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 5: LIVE CONTEXT BRAIN
+     ============================================================ -->
+<section class="section" id="brain">
+  <div class="container">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px;">
+      <div>
+        <p class="section-tag">The Context Brain · Live Interactive Graph</p>
+        <h2 class="section-title">Your memory, live.</h2>
+        <p class="section-desc">
+          A real-time interactive view of Synra’s repository context graph. Hover or tap nodes to inspect symbols, call hierarchies, AST linkages, and past engineering decisions.
+        </p>
+      </div>
+      <div>
+        <a class="btn-ghost" href="#waitlist">Connect Repository</a>
+      </div>
+    </div>
+
+    <div class="brain-container">
+      <div class="brain-toolbar">
+        <div class="brain-status">
+          <span class="pulse-dot"></span>
+          <span><strong>Memory Engine Active</strong> · Dual-Write SQLite/Supabase + Local Markdown Vault</span>
+        </div>
+        <div class="filter-pills" id="graph-filters">
+          <button class="filter-btn active" data-filter="all">All (38 Nodes)</button>
+          <button class="filter-btn" data-filter="core">Core Architecture</button>
+          <button class="filter-btn" data-filter="mcp">MCP & Tools</button>
+          <button class="filter-btn" data-filter="security">Security & SARIF</button>
+        </div>
+      </div>
+
+      <div class="brain-canvas-wrap">
+        <canvas id="brain-canvas"></canvas>
+        <div class="node-inspector" id="node-inspector">
+          <div class="node-lbl" id="insp-title">Select a Node</div>
+          <div class="node-sub" id="insp-type">Interactive knowledge node</div>
+          <div style="margin-top: 8px; color: rgba(255,255,255,0.7);" id="insp-desc">
+            Move mouse or touch graph nodes to inspect cross-file AST dependencies, MCP connections, and audit records.
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top: 14px; font-size: 12px; color: var(--fg-muted);">
+      Node coordinates synced with deterministic tree-sitter symbol hashes. Model changes; memory compounds.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 6: CHAPTER THREE — FOUR VERSIONS ROADMAP
+     ============================================================ -->
+<section class="section" id="versions">
+  <div class="container">
+    <p class="section-tag">Chapter Three</p>
+    <h2 class="section-title">Four versions. One continuous memory.</h2>
+    <p class="section-desc">
+      Nothing built in V1 is thrown away. Each version deepens the same underlying property graph.
+    </p>
+
+    <div class="versions-list">
+      <article class="version-row highlight">
+        <div class="v-idx">01</div>
+        <div class="v-title-wrap">
+          <h3>GitHub Wedge</h3>
+          <p class="v-period">Months 1 — 3</p>
+        </div>
+        <p class="v-desc">
+          Zero-retention GitHub App. Parses PR diffs with Tree-sitter, runs Semgrep scans, and posts AST-anchored evidence comments — inside the workflow developers already use.
+        </p>
+      </article>
+
+      <article class="version-row">
+        <div class="v-idx">02</div>
+        <div class="v-title-wrap">
+          <h3>Repository Memory</h3>
+          <p class="v-period">Months 4 — 6</p>
+        </div>
+        <p class="v-desc">
+          Persistent property graph stores architecture, APIs, past PRs, and team decisions. Exposed through an open Model Context Protocol (MCP) server — the AI stops forgetting.
+        </p>
+      </article>
+
+      <article class="version-row">
+        <div class="v-idx">03</div>
+        <div class="v-title-wrap">
+          <h3>Multi-AI Brain</h3>
+          <p class="v-period">Months 7 — 12</p>
+        </div>
+        <p class="v-desc">
+          Model-agnostic routing between Claude, GPT-4o, and Gemini. AST symbol isolation reduces token consumption by 90%+ on large-repo changes. Model changes. Memory doesn’t.
+        </p>
+      </article>
+
+      <article class="version-row">
+        <div class="v-idx">04</div>
+        <div class="v-title-wrap">
+          <h3>Security Passport</h3>
+          <p class="v-period">Months 13 — 18</p>
+        </div>
+        <p class="v-desc">
+          SARIF-compliant audit artifacts. Policy validation. Human Trust Layer for enterprise governance. Turning code review from a subjective opinion into an indelible audit trail.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 7: CHAPTER FOUR — SECURITY & EVIDENCE
+     ============================================================ -->
+<section class="section" id="security">
+  <div class="container">
+    <div class="security-grid">
+      <div>
+        <p class="section-tag">Chapter Four</p>
+        <h2 class="section-title">Evidence, not assumptions.</h2>
+        <p class="section-desc">
+          We never claim code is safe. We show mathematical and static proof. Every AI-generated commit produces a machine-readable Security Passport that enterprise auditors can trust.
+        </p>
+
+        <div class="sec-check-list">
+          <div class="sec-check-item">
+            <span class="sec-num">01</span>
+            <span>Model provenance & prompt hash validation</span>
+          </div>
+          <div class="sec-check-item">
+            <span class="sec-num">02</span>
+            <span>Call-graph blast radius & symbol hierarchy mapping</span>
+          </div>
+          <div class="sec-check-item">
+            <span class="sec-num">03</span>
+            <span>Static analysis integration — Semgrep + CodeQL rules</span>
+          </div>
+          <div class="sec-check-item">
+            <span class="sec-num">04</span>
+            <span>Policy compliance, test execution proof & delta coverage</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="passport-wrap">
+        <div class="terminal-header">
+          <span class="dot-mac"></span>
+          <span class="dot-mac"></span>
+          <span class="dot-mac"></span>
+          <span class="terminal-title">security_passport.json</span>
+        </div>
+        <div class="terminal-body" style="font-size: 12px;">
+<pre><code>{
+  <span class="t-key">"passport_id"</span>: <span class="t-accent">"pass_sec_98421a_2026"</span>,
+  <span class="t-key">"commit_sha"</span>: <span class="t-val">"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"</span>,
+  <span class="t-key">"ai_attribution"</span>: {
+    <span class="t-key">"agent"</span>: <span class="t-val">"Cursor / Claude 3.5 Sonnet"</span>,
+    <span class="t-key">"timestamp"</span>: <span class="t-val">"2026-03-31T10:14:22Z"</span>
+  },
+  <span class="t-key">"blast_radius"</span>: {
+    <span class="t-key">"affected_files"</span>: <span class="t-accent">4</span>,
+    <span class="t-key">"impacted_symbols"</span>: [<span class="t-val">"authService.verifyToken"</span>],
+    <span class="t-key">"graph_depth"</span>: <span class="t-accent">3</span>
+  },
+  <span class="t-key">"verification_evidence"</span>: {
+    <span class="t-key">"sarif_scan"</span>: { <span class="t-key">"high_severity"</span>: <span class="t-accent">0</span>, <span class="t-key">"status"</span>: <span class="t-success">"PASSED"</span> },
+    <span class="t-key">"codeql_analysis"</span>: { <span class="t-key">"rules_checked"</span>: <span class="t-accent">42</span>, <span class="t-key">"status"</span>: <span class="t-success">"PASSED"</span> },
+    <span class="t-key">"test_suite"</span>: { <span class="t-key">"tests_run"</span>: <span class="t-accent">18</span>, <span class="t-key">"coverage_delta"</span>: <span class="t-success">"+0.4%"</span> }
+  },
+  <span class="t-key">"policy_compliance"</span>: { <span class="t-key">"owasp_top_10"</span>: <span class="t-success">"VERIFIED"</span>, <span class="t-key">"soc2_audit"</span>: <span class="t-success">"COMPLIANT"</span> }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 8: THE FOUNDER — NABEEL KHAN
+     ============================================================ -->
+<section class="section" id="founder">
+  <div class="container">
+    <div>
+      <p class="section-tag gold">The Founder</p>
+      <h2 class="section-title">Built by an operator who ships.</h2>
+    </div>
+
+    <div class="founder-grid">
+      <!-- Left: Profile & Direct Contacts -->
+      <div>
+        <h3 class="founder-name">NABEEL KHAN</h3>
+        <p class="founder-role">Founder & Chief Technologist — Synra OS / Orbits Mind AI</p>
+        <p class="founder-age">Age 21</p>
+
+        <div class="founder-contacts">
+          <a class="contact-link" href="mailto:orbitmind595@gmail.com">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            <span>orbitmind595@gmail.com</span>
+          </a>
+          <a class="contact-link" href="tel:+919838336162">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"/></svg>
+            <span>+91 98383 36162</span>
+          </a>
+        </div>
+
+        <div class="facts-grid">
+          <div class="fact-card">
+            <p class="fact-tag">01 / Synra OS</p>
+            <p class="fact-val">Founded 2025</p>
+            <p class="fact-sub">Bootstrapped, memory-first architecture</p>
+          </div>
+          <div class="fact-card">
+            <p class="fact-tag">02 / 7 Patents</p>
+            <p class="fact-val">Provisional Indian Claims</p>
+            <p class="fact-sub">SAINAARA AI — attorney review</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Detailed Bio & Engineering Narrative -->
+      <div class="founder-bio">
+        <p>
+          Self-taught AI systems builder combining field engineering discipline with software architecture. Architected <strong>Synra OS</strong> from first principles — a persistent organizational memory layer built around a multi-entity knowledge graph and intent-aware context compaction.
+        </p>
+        <p>
+          Filed <strong>7 provisional Indian patent claims</strong> for SAINAARA AI covering temporal decision mapping, redaction conflict resolution, and permission freshness defense. Shipping production systems on a bootstrapped budget — from architecture to demo to enterprise conversation, end to end.
+        </p>
+        <p>
+          Previously shipped multiple production MVPs across agent orchestration, retrieval, and workflow automation — transforming concepts from prototype into reliable, deployed enterprise software.
+        </p>
+      </div>
+    </div>
+
+    <!-- Sacred Philosophical Foundation Quote -->
+    <div class="quote-box">
+      <p class="quote-text">“Truth is one; the wise call it by many names.”</p>
+      <p class="quote-source">Rig Veda 1.164.46 · Advaita Vedanta</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 9: ONE MORE THING
+     ============================================================ -->
+<section class="one-more-thing">
+  <div class="container">
+    <p class="section-tag">One More Thing</p>
+    <h2 class="omt-title">
+      Memory is the product.<br>
+      <span class="subdued">Everything else feeds it.</span>
+    </h2>
+    <p class="omt-sub">
+      Twenty years ago, every company needed a website. Today, every company needs AI. Tomorrow, every company will need memory.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 10: WAITLIST / EARLY ACCESS
+     ============================================================ -->
+<section class="section" id="waitlist">
+  <div class="container">
+    <div class="waitlist-box">
+      <p class="section-tag">Early Access</p>
+      <h2 class="section-title" style="margin: 0 auto;">Be first.</h2>
+      <p class="section-desc" style="margin: 20px auto 0;">
+        We’re onboarding a small group of design partners. Tell us about your engineering team and we’ll reach out.
+      </p>
+
+      <form class="waitlist-form" id="waitlist-form">
+        <div class="form-row">
+          <input
+            type="email"
+            required
+            id="waitlist-email"
+            placeholder="you@company.com"
+            aria-label="Email address"
+            class="waitlist-input"
+          />
+          <button type="submit" class="waitlist-btn">Request Access</button>
+        </div>
+        <p class="form-hint">
+          We respond within 24 hours. No credit card required.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 11: FREQUENTLY ASKED QUESTIONS
+     ============================================================ -->
+<section class="section" id="faq">
+  <div class="container">
+    <p class="section-tag">Frequently Asked</p>
+    <h2 class="section-title">Straight answers.</h2>
+
+    <div class="faq-accordion" id="faq-accordion">
+      <div class="faq-item" data-open>
+        <button class="faq-btn" aria-expanded="true">
+          <span>What exactly is Synra?</span>
+          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
+        </button>
+        <div class="faq-ans">
+          <div class="faq-ans-inner">
+            <p>
+              Synra is an AI Engineering Brain operating between code repositories and AI coding tools. It maintains a persistent repository memory graph, verifies pull requests using AST-level evidence, and provides a unified context layer across AI coding assistants like Cursor, Claude, and Codex.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" aria-expanded="false">
+          <span>Is context amnesia a real enterprise problem?</span>
+          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
+        </button>
+        <div class="faq-ans">
+          <div class="faq-ans-inner">
+            <p>
+              Yes. Autonomous coding tools generate code rapidly, but human developers spend significant time re-explaining repository architecture, conventions, and past decisions across separate chat sessions. The primary bottleneck has shifted from code generation to code verification and contextual alignment.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" aria-expanded="false">
+          <span>How does Synra handle code vulnerability detection?</span>
+          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
+        </button>
+        <div class="faq-ans">
+          <div class="faq-ans-inner">
+            <p>
+              By orchestrating deterministic static security analysis tools (Semgrep and GitHub CodeQL) locally before querying LLM modules. We never claim code is “100% safe.” Instead, Synra delivers evidence-driven verification backed by static analysis outputs and test execution data, compiled into a SARIF-compliant Security Passport.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" aria-expanded="false">
+          <span>What if OpenAI or Anthropic copies this?</span>
+          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
+        </button>
+        <div class="faq-ans">
+          <div class="faq-ans-inner">
+            <p>
+              Foundational LLM vendors build general reasoning models. Synra builds enterprise-specific structural memory graphs that work across heterogeneous tools. Our persistent, enterprise-specific Code Knowledge Graph deepens with every merged PR — a defensive data moat that neither OpenAI nor Anthropic has any incentive to build inside their own walled gardens.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" aria-expanded="false">
+          <span>What if GitHub builds native repository memory?</span>
+          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
+        </button>
+        <div class="faq-ans">
+          <div class="faq-ans-inner">
+            <p>
+              GitHub owns its own platform, but engineering teams actively avoid single-vendor lock-in. A model-agnostic memory layer that bridges Cursor, Claude, and local CLIs remains valuable even if GitHub ships a native competitor. Memory lock-in compounds; it doesn't reset when a vendor ships a feature.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-btn" aria-expanded="false">
+          <span>Is my code and team data private?</span>
+          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
+        </button>
+        <div class="faq-ans">
+          <div class="faq-ans-inner">
+            <p>
+              Yes. Synra operates on a local-first architecture. It can run local models via Ollama on your GPU, writes memories directly to your local Markdown vault, and keeps security evaluations on your own infrastructure. None of your proprietary code or context is ever used to train third-party foundation models.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER WITH ANIMATED HALFTONE DOT FIELD
+     ============================================================ -->
+<footer class="footer-wrap">
+  <canvas id="footer-dots" aria-hidden="true"></canvas>
+
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <a class="footer-brand" href="#hero">Synra</a>
+        <p class="footer-tagline">
+          The AI Engineering Brain. Persistent memory layer for Cursor, Claude, and Codex. Formerly PR Guardian.
+        </p>
+
+        <div class="footer-social">
+          <a href="https://github.com/Nobioo7" target="_blank" rel="noopener" aria-label="GitHub">
+            <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          </a>
+          <a href="mailto:orbitmind595@gmail.com" aria-label="Email">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          </a>
+          <a href="tel:+919838336162" aria-label="Phone">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#problem">The Problem</a></li>
+          <li><a href="#solution">Architecture</a></li>
+          <li><a href="#brain">Context Brain</a></li>
+          <li><a href="#versions">Roadmap</a></li>
+          <li><a href="#security">Security & SARIF</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Technology</h4>
+        <ul>
+          <li><a href="#solution">Tree-sitter AST</a></li>
+          <li><a href="#brain">Property Graph</a></li>
+          <li><a href="#security">Security Passports</a></li>
+          <li><a href="#thesis">Compaction Model</a></li>
+          <li><a href="#versions">MCP Server</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#founder">The Founder</a></li>
+          <li><a href="mailto:orbitmind595@gmail.com">Contact</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#waitlist">Early Access</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2026 Synra · All rights reserved.</p>
+      <p style="font-style: italic;">Model changes. Memory doesn’t.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast Element -->
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================
+     SCRIPTS: KINETIC RING, CONTEXT BRAIN, HALFTONE DOTS & UI
      ============================================================ -->
 <script>
 (function () {
   'use strict';
 
-  function createRingController(opts) {
-    const frameEl = document.getElementById(opts.frameId);
-    const canvas  = document.getElementById(opts.canvasId);
+  /* ================= 1. KINETIC HERO RING CONTROLLER ================= */
+  function initHeroRing() {
+    const frameEl = document.getElementById('hero-frame');
+    const canvas  = document.getElementById('ring-canvas');
+    if (!frameEl || !canvas) return;
     const ctx     = canvas.getContext('2d');
     const bloom   = document.createElement('canvas');
     const bctx    = bloom.getContext('2d');
 
-    const heroEl  = document.getElementById(opts.heroId);
-    const typedEl = document.getElementById(opts.typedId);
-    const caretEl = document.getElementById(opts.caretId);
-    const section = frameEl.closest('.ring-section');
+    const typedEl = document.getElementById('typed-hero');
+    const caretEl = document.getElementById('caret-hero');
 
     const TWO_PI = Math.PI * 2;
     const RI_BASE = 435;
@@ -619,9 +1835,8 @@
     const STRANDS = 196;
     const SEG     = 40;
 
-    let FW = 0, FH = 0, W = 0, H = 0, U = 1, DPR = 1, shiftPx = 0;
+    let FW = 0, FH = 0, W = 0, H = 0, U = 1, DPR = 1;
     let RI = 0, RO = 0;
-
     let bodyGrad, edgeGrad, edgeGradB, ambientGrad, haloGrad, innerGrad;
 
     const POW   = new Float64Array(SEG + 1);
@@ -635,17 +1850,15 @@
       return x * x * (3 - 2 * x);
     }
 
-    (function initTables() {
-      for (let j = 0; j <= SEG; j++) {
-        const q = j / SEG;
-        POW[j]   = Math.pow(1 - q, 4.2);
-        QQ[j]    = 0.05 * q * q;
-        SINPQ[j] = Math.sin(Math.PI * q);
-        const s  = smoothstep01(q / 0.28);
-        HWF[j]   = 0.15 + 3.3 * s * (1 - 0.25 * q);
-        RSF[j]   = RI_BASE + (RO_BASE - RI_BASE) * q;
-      }
-    })();
+    for (let j = 0; j <= SEG; j++) {
+      const q = j / SEG;
+      POW[j]   = Math.pow(1 - q, 4.2);
+      QQ[j]    = 0.05 * q * q;
+      SINPQ[j] = Math.sin(Math.PI * q);
+      const s  = smoothstep01(q / 0.28);
+      HWF[j]   = 0.15 + 3.3 * s * (1 - 0.25 * q);
+      RSF[j]   = RI_BASE + (RO_BASE - RI_BASE) * q;
+    }
 
     const PXa = new Float64Array(SEG + 1), PYa = new Float64Array(SEG + 1);
     const LXa = new Float64Array(SEG + 1), LYa = new Float64Array(SEG + 1);
@@ -701,13 +1914,6 @@
       innerGrad.addColorStop(1.00, 'rgba(255,120,170,0)');
     }
 
-    function setCSSVars() {
-      if (section) {
-        section.style.setProperty('--u', U.toFixed(4) + 'px');
-        section.style.setProperty('--shift', shiftPx.toFixed(2) + 'px');
-      }
-    }
-
     function resize() {
       FW = frameEl.clientWidth;
       FH = frameEl.clientHeight;
@@ -731,35 +1937,15 @@
       RI = RI_BASE * U;
       RO = RO_BASE * U;
 
-      shiftPx = 0;
-      setCSSVars();
-
-      if (phone) {
-        const hh = heroEl.offsetHeight;
-        const bottom = 420 * U + hh;
-        shiftPx = Math.max(0, (FH - bottom) / 2);
-        setCSSVars();
-      }
-
       buildGradients();
-
-      if (reduced) render(getTime() / 1000);
     }
 
-    let ptrTX = 0, ptrTY = 0;
-    let px = 0, py = 0;
-
-    function onPointerMove(e) {
+    let ptrTX = 0, ptrTY = 0, px = 0, py = 0;
+    window.addEventListener('pointermove', e => {
       const r = frameEl.getBoundingClientRect();
-      let nx = ((e.clientX - r.left) / r.width) * 2 - 1;
-      let ny = ((e.clientY - r.top) / r.height) * 2 - 1;
-      ptrTX = nx < -1 ? -1 : nx > 1 ? 1 : nx;
-      ptrTY = ny < -1 ? -1 : ny > 1 ? 1 : ny;
-    }
-    function onPointerLeave() { ptrTX = 0; ptrTY = 0; }
-
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerleave', onPointerLeave, { passive: true });
+      ptrTX = (((e.clientX - r.left) / r.width) * 2 - 1);
+      ptrTY = (((e.clientY - r.top) / r.height) * 2 - 1);
+    }, { passive: true });
 
     function drawFins(t, spin, k) {
       const step = TWO_PI / STRANDS;
@@ -824,17 +2010,14 @@
       const spin = 0.06 * t;
       const k    = 0.42 * (1 + 0.12 * Math.sin(0.55 * t));
 
-      const baseCx = W / 2 + 34 * U;
-      const baseCy = -212 * U + shiftPx;
-
+      const baseCx = W / 2 + 20 * U;
+      const baseCy = -180 * U;
       const cx = baseCx + px * 14 * U;
       const cy = baseCy + py * 10 * U;
       const ys = 1.03 + py * 0.035;
 
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
       ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 1;
-      ctx.filter = 'none';
       ctx.clearRect(0, 0, W, H);
 
       ctx.save();
@@ -889,49 +2072,34 @@
       ctx.globalCompositeOperation = 'source-over';
     }
 
-    const WORDS   = opts.words;
-    const HOLD    = 2.6;
-    const DEL     = 0.07;
-    const EMPTY   = 0.25;
-    const TYPE    = 0.10;
-    const POST    = 0.15;
-    const BLINK   = 0.55;
-
+    const WORDS = ['Memory', 'Context', 'Recall', 'Understanding'];
+    const HOLD = 2.4, DEL = 0.06, EMPTY = 0.2, TYPE = 0.09, POST = 0.15, BLINK = 0.55;
     const SEGS = [];
-    let PERIOD = 1;
+    let PERIOD = 0, acc = 0;
+    for (let i = 0; i < WORDS.length; i++) {
+      SEGS.push({ type: 'hold', s: acc, d: HOLD, w: i }); acc += HOLD;
+      const dDel = WORDS[i].length * DEL;
+      SEGS.push({ type: 'del', s: acc, d: dDel, w: i }); acc += dDel;
+      SEGS.push({ type: 'empty', s: acc, d: EMPTY, w: i }); acc += EMPTY;
+      const nx = (i + 1) % WORDS.length;
+      const dType = WORDS[nx].length * TYPE;
+      SEGS.push({ type: 'type', s: acc, d: dType, w: nx }); acc += dType;
+      SEGS.push({ type: 'post', s: acc, d: POST, w: nx }); acc += POST;
+    }
+    PERIOD = acc;
 
-    (function buildTimeline() {
-      let acc = 0;
-      for (let i = 0; i < WORDS.length; i++) {
-        SEGS.push({ type: 'hold', s: acc, d: HOLD, w: i });            acc += HOLD;
-        const dDel = WORDS[i].length * DEL;
-        SEGS.push({ type: 'del',  s: acc, d: dDel, w: i });            acc += dDel;
-        SEGS.push({ type: 'empty', s: acc, d: EMPTY, w: i });          acc += EMPTY;
-        const nx = (i + 1) % WORDS.length;
-        const dType = WORDS[nx].length * TYPE;
-        SEGS.push({ type: 'type', s: acc, d: dType, w: nx });          acc += dType;
-        SEGS.push({ type: 'post', s: acc, d: POST, w: nx });           acc += POST;
-      }
-      PERIOD = acc;
-    })();
-
-    let lastStr = null;
-    let lastOn  = null;
-
+    let lastStr = null, lastOn = null;
     function updateText(t) {
       const p = ((t % PERIOD) + PERIOD) % PERIOD;
-      let seg = SEGS[SEGS.length - 1];
+      let seg = SEGS[0];
       for (let i = 0; i < SEGS.length; i++) {
-        const s = SEGS[i];
-        if (p >= s.s && p < s.s + s.d) { seg = s; break; }
+        if (p >= SEGS[i].s && p < SEGS[i].s + SEGS[i].d) { seg = SEGS[i]; break; }
       }
       const local = p - seg.s;
       const w = WORDS[seg.w];
-      let str = '';
-      let on = true;
+      let str = '', on = true;
       if (seg.type === 'hold') {
-        str = w;
-        on = Math.floor(local / BLINK) % 2 === 0;
+        str = w; on = Math.floor(local / BLINK) % 2 === 0;
       } else if (seg.type === 'del') {
         str = w.slice(0, Math.floor(w.length * (1 - local / seg.d)));
       } else if (seg.type === 'empty') {
@@ -939,212 +2107,326 @@
       } else if (seg.type === 'type') {
         str = w.slice(0, Math.min(w.length, Math.floor(local / TYPE)));
       } else {
-        str = w;
-        on = Math.floor(local / BLINK) % 2 === 0;
+        str = w; on = Math.floor(local / BLINK) % 2 === 0;
       }
       if (str !== lastStr) { typedEl.textContent = str; lastStr = str; }
       const o = on ? '1' : '0';
       if (o !== lastOn) { caretEl.style.opacity = o; lastOn = o; }
     }
 
-    const params = new URLSearchParams(location.search);
-    const isRec  = params.get('rec') === '1';
-    let recAnim = null;
-    let clockEl = null;
-
-    if (isRec) {
-      clockEl = document.createElement('div');
-      clockEl.id = 'rec-clock-' + opts.frameId;
-      clockEl.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;pointer-events:none;';
-      document.body.appendChild(clockEl);
-      recAnim = clockEl.animate(
-        [{ transform: 'translateX(0px)' }, { transform: 'translateX(100000px)' }],
-        { duration: 100000, iterations: 1, fill: 'both', easing: 'linear' }
-      );
-      recAnim.pause();
-      recAnim.currentTime = 0;
-    }
-
-    function getTime() {
-      if (recAnim) {
-        const ct = recAnim.currentTime;
-        return typeof ct === 'number' ? ct : 0;
-      }
-      return performance.now();
-    }
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let rafId = 0;
-    let running = false;
-    let inView = true;
-    let tabHidden = false;
-
-    function loop() {
-      rafId = requestAnimationFrame(loop);
+    function loop(ms) {
       px += (ptrTX - px) * 0.05;
       py += (ptrTY - py) * 0.05;
-      const t = getTime() / 1000;
+      const t = ms / 1000;
       render(t);
       updateText(t);
-    }
-    function start() {
-      if (running) return;
-      running = true;
-      rafId = requestAnimationFrame(loop);
-    }
-    function stop() {
-      running = false;
-      cancelAnimationFrame(rafId);
-    }
-    function syncLoop() {
-      if (reduced) return;
-      if (isRec) { start(); return; }
-      if (inView && !tabHidden) start();
-      else stop();
-    }
-
-    document.addEventListener('visibilitychange', function () {
-      tabHidden = document.hidden;
-      syncLoop();
-    });
-
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        inView = entries[0].isIntersecting;
-        syncLoop();
-      }, { threshold: 0 }).observe(frameEl);
+      requestAnimationFrame(loop);
     }
 
     resize();
-    if (reduced) {
-      typedEl.textContent = WORDS[0];
-      caretEl.style.opacity = '1';
-      render(0);
-    } else {
-      syncLoop();
-    }
-
-    if (window.ResizeObserver) {
-      new ResizeObserver(function () { resize(); }).observe(frameEl);
-    }
     window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', resize);
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { resize(); });
-    }
-
-    return {
-      resize: resize,
-      destroy: function () {
-        stop();
-        window.removeEventListener('pointermove', onPointerMove);
-        window.removeEventListener('pointerleave', onPointerLeave);
-        window.removeEventListener('resize', resize);
-        if (clockEl && clockEl.parentNode) clockEl.parentNode.removeChild(clockEl);
-      }
-    };
+    requestAnimationFrame(loop);
   }
 
-  // Boot only the Hero ring controller
-  createRingController({
-    frameId: 'hero-frame',
-    canvasId: 'ring-hero',
-    heroId: 'hero-content',
-    typedId: 'typed-hero',
-    caretId: 'caret-hero',
-    words: ['Memory', 'Context', 'Recall']
-  });
+  /* ================= 2. LIVE CONTEXT BRAIN SIMULATION ================= */
+  function initBrainGraph() {
+    const canvas = document.getElementById('brain-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const inspTitle = document.getElementById('insp-title');
+    const inspType  = document.getElementById('insp-type');
+    const inspDesc  = document.getElementById('insp-desc');
 
-})();
-</script>
+    let W = canvas.clientWidth, H = canvas.clientHeight;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-<!-- ============================================================
-     SOLACE SCRIPTS
-     ============================================================ -->
-<script>
-(function () {
-  'use strict';
+    function resize() {
+      W = canvas.clientWidth;
+      H = canvas.clientHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
 
-  // accordion: one answer open at a time
-  const qs = [...document.querySelectorAll('#solace-page .q')];
-  qs.forEach(q => q.querySelector('button').onclick = () => {
-    const open = q.hasAttribute('data-open');
-    qs.forEach(o => {
-      o.removeAttribute('data-open');
-      o.querySelector('button').setAttribute('aria-expanded', 'false');
+    const NODES = [
+      { id: 'core-brain', label: 'Synra Core Engine', group: 'core', x: 0.5, y: 0.45, r: 16, color: '#ff7a4c', detail: 'Central context memory graph and query coordinator.' },
+      { id: 'tree-sitter', label: 'Tree-sitter AST', group: 'core', x: 0.32, y: 0.35, r: 11, color: '#ffa477', detail: 'Concrete Syntax Tree parser for cross-file deterministic symbol resolution.' },
+      { id: 'property-graph', label: 'Property Graph (Vault)', group: 'core', x: 0.65, y: 0.32, r: 13, color: '#ffa477', detail: 'Markdown vault & vector graph storing past PRs, architectures, and decisions.' },
+      { id: 'mcp-server', label: 'Open MCP Server', group: 'mcp', x: 0.22, y: 0.6, r: 12, color: '#00f3ff', detail: 'Model Context Protocol endpoints exposing persistent memories to IDEs.' },
+      { id: 'cursor', label: 'Cursor IDE', group: 'mcp', x: 0.12, y: 0.48, r: 9, color: '#56e2ec', detail: 'Live context bridge injecting symbol memory into Cursor prompt chains.' },
+      { id: 'claude-desktop', label: 'Claude 3.5 Sonnet', group: 'mcp', x: 0.15, y: 0.72, r: 9, color: '#56e2ec', detail: 'Model-agnostic reasoning agent fed AST-isolated code slices.' },
+      { id: 'chrome-ext', label: 'Chrome Extension', group: 'mcp', x: 0.35, y: 0.75, r: 10, color: '#00f3ff', detail: 'Web chat interceptor capturing ChatGPT and Claude web discussions.' },
+      { id: 'sarif-engine', label: 'SARIF Passport Gen', group: 'security', x: 0.78, y: 0.55, r: 12, color: '#52e18b', detail: 'Produces machine-verifiable audit artifacts attached to git commits.' },
+      { id: 'semgrep', label: 'Semgrep Static Scanner', group: 'security', x: 0.88, y: 0.42, r: 9, color: '#7bf0aa', detail: 'Zero-retention local static vulnerability check prior to LLM routing.' },
+      { id: 'codeql', label: 'GitHub CodeQL Guard', group: 'security', x: 0.85, y: 0.7, r: 9, color: '#7bf0aa', detail: 'Taint-tracking security verification across multi-file pull requests.' },
+      { id: 'local-ollama', label: 'Ollama Llama 3.2', group: 'core', x: 0.48, y: 0.2, r: 10, color: '#ffa477', detail: 'On-device local GPU model extracting concepts as [[wikilinks]].' },
+      { id: 'auth-service', label: 'AuthService.verifyToken', group: 'security', x: 0.62, y: 0.72, r: 8, color: '#52e18b', detail: 'Symbol-level call node tracked through blast-radius graph.' }
+    ];
+
+    const LINKS = [
+      ['core-brain', 'tree-sitter'],
+      ['core-brain', 'property-graph'],
+      ['core-brain', 'mcp-server'],
+      ['core-brain', 'sarif-engine'],
+      ['core-brain', 'local-ollama'],
+      ['mcp-server', 'cursor'],
+      ['mcp-server', 'claude-desktop'],
+      ['mcp-server', 'chrome-ext'],
+      ['sarif-engine', 'semgrep'],
+      ['sarif-engine', 'codeql'],
+      ['sarif-engine', 'auth-service'],
+      ['tree-sitter', 'property-graph'],
+      ['property-graph', 'auth-service']
+    ];
+
+    let currentFilter = 'all';
+    let hoveredNode = null;
+    let selectedNode = NODES[0];
+
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+      });
     });
-    if (!open) {
-      q.setAttribute('data-open', '');
-      q.querySelector('button').setAttribute('aria-expanded', 'true');
-    }
-  });
 
-  // halftone dot field
-  const cv = document.getElementById('dots');
-  const ctx = cv.getContext('2d');
-  const calm = matchMedia('(prefers-reduced-motion:reduce)').matches;
-  let W = 0, H = 0, dpr = 1, step = 0, cols = 0, rows = 0, seed = [];
-  let mx = -9999, my = -9999, tmx = -9999, tmy = -9999;
-  const hash = (i, j) => { let h = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return h - Math.floor(h); };
+    let mx = -1, my = -1;
+    canvas.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      mx = e.clientX - rect.left;
+      my = e.clientY - rect.top;
 
-  function size() {
-    dpr = Math.min(devicePixelRatio || 1, 2);
-    W = cv.clientWidth;
-    H = cv.clientHeight;
-    cv.width = W * dpr;
-    cv.height = H * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    step = Math.max(14, Math.min(W / 1600, H / 940) * 20.5);
-    cols = Math.ceil(W / step) + 1;
-    rows = Math.ceil(H / step) + 1;
-    seed = [];
-    for (let j = 0; j < rows; j++) {
-      for (let i = 0; i < cols; i++) {
-        seed.push([hash(i, j), hash(i + 71, j + 13), hash(i + 9, j + 97)]);
+      let found = null;
+      for (const node of NODES) {
+        if (currentFilter !== 'all' && node.group !== currentFilter && node.group !== 'core') continue;
+        const nx = node.x * W;
+        const ny = node.y * H;
+        const dist = Math.hypot(mx - nx, my - ny);
+        if (dist <= node.r + 6) {
+          found = node;
+          break;
+        }
       }
-    }
-  }
-  addEventListener('resize', size);
-  size();
-  addEventListener('pointermove', e => {
-    const r = cv.getBoundingClientRect();
-    tmx = e.clientX - r.left;
-    tmy = e.clientY - r.top;
-  });
-  document.addEventListener('pointerleave', () => { tmx = tmy = -9999; });
+      hoveredNode = found;
+      if (found) {
+        inspTitle.textContent = found.label;
+        inspType.textContent = 'Group: ' + found.group.toUpperCase() + ' · Node ID: ' + found.id;
+        inspDesc.textContent = found.detail;
+      }
+    });
 
-  const C0 = [226, 106, 24], C1 = [248, 150, 64], C2 = [255, 214, 170];
-  const mix = (a, b, t) => a.map((v, k) => Math.round(v + (b[k] - v) * t));
+    function draw(t) {
+      ctx.clearRect(0, 0, W, H);
 
-  function draw(t) {
-    ctx.clearRect(0, 0, W, H);
-    mx += (tmx - mx) * .12;
-    my += (tmy - my) * .12;
-    const top = H * .1, full = H * .36, R = step * .37;
-    for (let j = 0; j < rows; j++) {
-      const y = j * step + step * .5;
-      if (y < top - step * 2) continue;
-      const v = Math.min(1, Math.max(0, (y - top) / (full - top)));
-      const col = v < .55 ? mix(C0, C1, v / .55) : mix(C1, C2, (v - .55) / .45 * .85 + Math.max(0, (y - H * .9) / (H * .1)) * .15);
-      ctx.fillStyle = `rgb(${col[0]},${col[1]},${col[2]})`;
-      for (let i = 0; i < cols; i++) {
-        const x = i * step + step * .5, [a, b, c] = seed[j * cols + i];
-        const wave = calm ? .7 : .5 + .5 * Math.sin(t * (1.6 + b * 2.6) + a * 6.283 + Math.sin(t * .7 + i * .21 + j * .13) * 1.4);
-        const keep = Math.min(1, v * 1.6 + .12) - (a * .6);
-        if (keep <= 0 && c > .08) continue;
-        let s = (.42 + .58 * Math.pow(wave, 1.3)) * Math.min(1, .5 + v * .6) * (keep > 0 ? 1 : .8);
-        const dx = x - mx, dy = y - my, d2 = dx * dx + dy * dy, hov = Math.exp(-d2 / (step * step * 22));
-        s = Math.min(1.05, s + hov * .7);
-        const r = R * s;
-        if (r < .6) continue;
+      // Links
+      for (const [srcId, tgtId] of LINKS) {
+        const src = NODES.find(n => n.id === srcId);
+        const tgt = NODES.find(n => n.id === tgtId);
+        if (!src || !tgt) continue;
+
+        const isFiltered = currentFilter !== 'all' && (src.group !== currentFilter && src.group !== 'core') && (tgt.group !== currentFilter && tgt.group !== 'core');
+        if (isFiltered) continue;
+
+        const x1 = src.x * W, y1 = src.y * H;
+        const x2 = tgt.x * W, y2 = tgt.y * H;
+
         ctx.beginPath();
-        ctx.arc(x, y, r, 0, 6.2832);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = (hoveredNode && (hoveredNode.id === srcId || hoveredNode.id === tgtId))
+          ? 'rgba(255, 255, 255, 0.55)'
+          : 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = (hoveredNode && (hoveredNode.id === srcId || hoveredNode.id === tgtId)) ? 2 : 1;
+        ctx.stroke();
+
+        // Traveling pulse on links
+        const prog = (t * 0.4 + (src.x + tgt.y) * 4) % 1;
+        const px = x1 + (x2 - x1) * prog;
+        const py = y1 + (y2 - y1) * prog;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fillStyle = src.color;
         ctx.fill();
       }
+
+      // Nodes
+      for (const node of NODES) {
+        const isFiltered = currentFilter !== 'all' && node.group !== currentFilter && node.group !== 'core';
+        if (isFiltered) continue;
+
+        const nx = node.x * W + Math.sin(t * 1.2 + node.r) * 2;
+        const ny = node.y * H + Math.cos(t * 1.2 + node.r) * 2;
+        const isHover = hoveredNode && hoveredNode.id === node.id;
+
+        // Glow ring
+        ctx.beginPath();
+        ctx.arc(nx, ny, node.r + (isHover ? 8 : 4), 0, Math.PI * 2);
+        ctx.fillStyle = node.color + '22';
+        ctx.fill();
+
+        // Node center
+        ctx.beginPath();
+        ctx.arc(nx, ny, node.r, 0, Math.PI * 2);
+        ctx.fillStyle = isHover ? '#fff' : node.color;
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        // Text label
+        ctx.font = (isHover ? 'bold ' : '') + '11px ' + getComputedStyle(document.body).fontFamily;
+        ctx.fillStyle = isHover ? '#ffffff' : 'rgba(255, 255, 255, 0.75)';
+        ctx.textAlign = 'center';
+        ctx.fillText(node.label, nx, ny + node.r + 14);
+      }
+
+      requestAnimationFrame(draw);
     }
+    requestAnimationFrame(draw);
   }
-  function loop(ms) { draw(ms / 1000); requestAnimationFrame(loop); }
-  requestAnimationFrame(loop);
+
+  /* ================= 3. HALFTONE DOT FIELD IN FOOTER ================= */
+  function initFooterDots() {
+    const cv = document.getElementById('footer-dots');
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    let W = 0, H = 0, dpr = 1, step = 0, cols = 0, rows = 0, seed = [];
+    let mx = -9999, my = -9999, tmx = -9999, tmy = -9999;
+    const hash = (i, j) => { let h = Math.sin(i * 127.1 + j * 311.7) * 43758.5453; return h - Math.floor(h); };
+
+    function size() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      W = cv.clientWidth;
+      H = cv.clientHeight;
+      cv.width = W * dpr;
+      cv.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      step = Math.max(14, Math.min(W / 1600, H / 940) * 20.5);
+      cols = Math.ceil(W / step) + 1;
+      rows = Math.ceil(H / step) + 1;
+      seed = [];
+      for (let j = 0; j < rows; j++) {
+        for (let i = 0; i < cols; i++) {
+          seed.push([hash(i, j), hash(i + 71, j + 13), hash(i + 9, j + 97)]);
+        }
+      }
+    }
+    window.addEventListener('resize', size);
+    size();
+
+    window.addEventListener('pointermove', e => {
+      const r = cv.getBoundingClientRect();
+      tmx = e.clientX - r.left;
+      tmy = e.clientY - r.top;
+    });
+
+    const C0 = [226, 106, 24], C1 = [248, 150, 64], C2 = [255, 214, 170];
+    const mix = (a, b, t) => a.map((v, k) => Math.round(v + (b[k] - v) * t));
+
+    function drawDots(t) {
+      ctx.clearRect(0, 0, W, H);
+      mx += (tmx - mx) * 0.12;
+      my += (tmy - my) * 0.12;
+      const top = H * 0.05, full = H * 0.45, R = step * 0.35;
+
+      for (let j = 0; j < rows; j++) {
+        const y = j * step + step * 0.5;
+        if (y < top - step) continue;
+        const v = Math.min(1, Math.max(0, (y - top) / (full - top)));
+        const col = v < 0.55 ? mix(C0, C1, v / 0.55) : mix(C1, C2, (v - 0.55) / 0.45 * 0.85);
+        ctx.fillStyle = `rgb(${col[0]},${col[1]},${col[2]})`;
+
+        for (let i = 0; i < cols; i++) {
+          const x = i * step + step * 0.5, [a, b, c] = seed[j * cols + i] || [0,0,0];
+          const wave = 0.5 + 0.5 * Math.sin(t * (1.6 + b * 2.6) + a * 6.28);
+          let s = (0.42 + 0.58 * Math.pow(wave, 1.3)) * Math.min(1, 0.5 + v * 0.6);
+          const dx = x - mx, dy = y - my, d2 = dx * dx + dy * dy;
+          const hov = Math.exp(-d2 / (step * step * 22));
+          s = Math.min(1.05, s + hov * 0.7);
+          const r = R * s;
+          if (r < 0.6) continue;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      requestAnimationFrame(drawDots);
+    }
+    requestAnimationFrame(drawDots);
+  }
+
+  /* ================= 4. UI: FAQ ACCORDION & WAITLIST TOAST ================= */
+  function initUI() {
+    // Nav Scroll Effect
+    const nav = document.getElementById('main-nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 20) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+    }, { passive: true });
+
+    // FAQ Accordion
+    const items = document.querySelectorAll('#faq-accordion .faq-item');
+    items.forEach(item => {
+      const btn = item.querySelector('.faq-btn');
+      btn.addEventListener('click', () => {
+        const isOpen = item.hasAttribute('data-open');
+        items.forEach(other => {
+          other.removeAttribute('data-open');
+          other.querySelector('.faq-btn').setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          item.setAttribute('data-open', '');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    // Toast & Form Submission
+    const form = document.getElementById('waitlist-form');
+    const toast = document.getElementById('toast');
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3800);
+    }
+
+    if (form) {
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const email = document.getElementById('waitlist-email').value;
+        if (email) {
+          showToast("Welcome aboard. We'll be in touch within 24 hours.");
+          form.reset();
+        }
+      });
+    }
+
+    // Keyboard Shortcut 'g' + 'h' to scroll home (from Synra OS)
+    let gPressed = false, timer = null;
+    window.addEventListener('keydown', e => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      if (e.key.toLowerCase() === 'g') {
+        gPressed = true;
+        clearTimeout(timer);
+        timer = setTimeout(() => { gPressed = false; }, 800);
+      } else if (gPressed && e.key.toLowerCase() === 'h') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        gPressed = false;
+      } else {
+        gPressed = false;
+      }
+    });
+  }
+
+  // Boot all subsystems
+  initHeroRing();
+  initBrainGraph();
+  initFooterDots();
+  initUI();
 
 })();
 </script>
