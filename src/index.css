@@ -32,3 +32,14 @@ body {
   background: rgba(255, 255, 255, 0.2);
   color: #fff;
 }
+
+/* Smooth scrolling for all scroll containers */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Ensure sections transition smoothly into one another */
+section,
+div[id] {
+  position: relative;
+}

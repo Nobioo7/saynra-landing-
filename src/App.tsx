@@ -1,7 +1,6 @@
 import React from 'react';
 import HeroSection from './components/HeroSection';
 import BenefitsSection from './components/BenefitsSection';
-import FeaturesSection from './components/FeaturesSection';
 import SolaceSection from './components/SolaceSection';
 
 export const App: React.FC = () => {
@@ -13,10 +12,7 @@ export const App: React.FC = () => {
       {/* SECTION 2: KEY BENEFITS */}
       <BenefitsSection />
 
-      {/* SECTION 3: GLOWING FEATURE CARDS (V2, V3, V4) */}
-      <FeaturesSection />
-
-      {/* SECTION 4: FAQ & FOUNDER CONTACT */}
+      {/* SECTION 3: FAQ & FOUNDER CONTACT */}
       <SolaceSection />
     </div>
   );
