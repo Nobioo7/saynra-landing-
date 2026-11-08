@@ -4,28 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Synra — The AI Engineering Brain · Persistent Memory Layer</title>
-<meta name="description" content="Synra is the AI Engineering Brain. A persistent, evidence-backed memory layer that gives Cursor, Claude, and ChatGPT a shared understanding of how your company builds software.">
+<meta name="description" content="Synra is the AI Engineering Brain. A persistent, evidence-backed memory layer that gives Cursor, Claude, and Codex a shared understanding of how your company builds software.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
-     GLOBAL VARIABLES & RESET
+     GLOBAL VARIABLES & ACCESSIBLE FOUNDATION
      ============================================================ */
   :root {
+    interpolate-size: allow-keywords; /* Modern CSS intrinsic size interpolation */
     --u: 1px;
-    --shift: 0px;
     --bg: #000000;
     --surface: #0a0a0c;
     --surface-card: rgba(255, 255, 255, 0.02);
-    --border: rgba(255, 255, 255, 0.07);
-    --border-hover: rgba(255, 255, 255, 0.16);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.2);
     --fg: #f5f5f7;
-    --fg-muted: #86868b;
+    --fg-muted: #8e8e93;
     --fg-subtle: #48484a;
     --gold: #d4af37;
     --gold-glow: rgba(212, 175, 55, 0.25);
-    --accent: #ff8a50;
+    --accent: #ff7a4c;
+    --accent-glow: rgba(255, 122, 76, 0.35);
     --cyan: #00f3ff;
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     --font-geist: 'Geist', var(--font-sans);
@@ -56,6 +57,44 @@
     line-height: 1.5;
   }
 
+  /* Accessibility: Visually Hidden Utility for screen readers */
+  .visually-hidden:where(:not(:focus-within, :active)) {
+    position: absolute !important;
+    clip-path: inset(50%) !important;
+    overflow: hidden !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Skip Link for Keyboard Navigation */
+  .skip-link {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 9999;
+    padding: 12px 20px;
+    background: #fff;
+    color: #000;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+    transition: transform 0.2s ease;
+  }
+  .skip-link:not(:focus) {
+    transform: translateY(-160%);
+  }
+
+  /* Focus Visible styling respecting WCAG 2.2 */
+  :focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
   ::selection {
     background: #f5f5f7;
     color: #000;
@@ -76,8 +115,25 @@
 
   ul { list-style: none; }
 
+  /* Scroll margin on all sections to prevent sticky header occlusion */
+  section, [id] {
+    scroll-margin-top: 84px;
+  }
+
+  /* Reading Progress Bar */
+  .scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff7a4c, #ffb48c, #00f3ff);
+    z-index: 1001;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
   /* ============================================================
-     NAVIGATION BAR
+     NAVIGATION BAR & MOBILE DRAWER
      ============================================================ */
   .nav {
     position: fixed;
@@ -89,16 +145,16 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 4vw;
-    z-index: 100;
-    background: rgba(0, 0, 0, 0.65);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.68);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     transition: background 0.3s ease, border-color 0.3s ease;
   }
   .nav.scrolled {
-    background: rgba(0, 0, 0, 0.88);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.9);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
   }
 
   .brand {
@@ -110,6 +166,7 @@
     letter-spacing: -0.01em;
     color: #fff;
     user-select: none;
+    min-height: 44px;
   }
   .brand svg {
     width: 22px;
@@ -121,15 +178,16 @@
     display: none;
     align-items: center;
     gap: 28px;
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 400;
     color: var(--fg-muted);
   }
-  @media (min-width: 900px) {
+  @media (min-width: 920px) {
     .nav-links { display: flex; }
   }
   .nav-links a {
     transition: color 0.2s ease;
+    padding: 6px 0;
   }
   .nav-links a:hover {
     color: #fff;
@@ -144,8 +202,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 32px;
-    padding: 0 16px;
+    min-height: 34px;
+    padding: 0 18px;
     border-radius: 9999px;
     background: #fff;
     color: #000;
@@ -156,6 +214,74 @@
   .btn-nav:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+  }
+
+  /* Mobile Menu Toggle */
+  .menu-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  @media (min-width: 920px) {
+    .menu-toggle { display: none; }
+  }
+  .menu-toggle span {
+    width: 18px;
+    height: 2px;
+    background: #fff;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+  .menu-toggle[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .menu-toggle[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-toggle[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* Mobile Drawer */
+  .mobile-drawer {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    display: flex;
+    flex-direction: column;
+    padding: 32px 6vw;
+    gap: 20px;
+    z-index: 999;
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  }
+  .mobile-drawer.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .mobile-drawer a {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--fg);
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .mobile-drawer a:hover {
+    color: var(--accent);
   }
 
   /* ============================================================
@@ -204,7 +330,7 @@
     z-index: 2;
     text-align: center;
     padding: 0 20px;
-    max-width: 960px;
+    max-width: 980px;
     margin-top: 80px;
   }
 
@@ -217,7 +343,7 @@
     text-transform: uppercase;
     color: var(--fg-muted);
     margin-bottom: 24px;
-    padding: 6px 16px;
+    padding: 8px 18px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.03);
@@ -285,7 +411,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 46px;
+    min-height: 48px;
     padding: 0 28px;
     border-radius: 999px;
     background: #fff;
@@ -302,9 +428,9 @@
   .btn-ghost {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    height: 46px;
-    padding: 0 22px;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 24px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.16);
     background: rgba(255, 255, 255, 0.03);
@@ -320,14 +446,14 @@
   }
 
   .hero-meta {
-    margin-top: 20px;
-    font-size: 12px;
+    margin-top: 22px;
+    font-size: 12.5px;
     color: var(--fg-muted);
     letter-spacing: 0.02em;
   }
 
   /* ============================================================
-     CONTENT CONTAINERS & SECTION STYLING
+     SECTIONS & CONTAINER SYSTEM
      ============================================================ */
   .section {
     position: relative;
@@ -375,6 +501,35 @@
   }
 
   /* ============================================================
+     3D SPECULAR INTERACTIVE CARDS
+     ============================================================ */
+  .card-3d {
+    position: relative;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface-card);
+    overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-3d:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  }
+  .card-3d::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.08), transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .card-3d:hover::after {
+    opacity: 1;
+  }
+
+  /* ============================================================
      SECTION 2: THESIS / MANIFESTO
      ============================================================ */
   .manifesto-box {
@@ -409,21 +564,11 @@
   }
 
   .failure-card {
-    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     min-height: 380px;
     padding: 36px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--surface-card);
-    transition: border-color 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
-  }
-  .failure-card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
   }
 
   .card-top .num {
@@ -475,11 +620,11 @@
      ============================================================ */
   .terminal-card {
     position: relative;
-    max-width: 860px;
+    max-width: 880px;
     margin: 60px auto 0;
     border-radius: 18px;
     border: 1px solid var(--border);
-    background: rgba(12, 12, 14, 0.85);
+    background: rgba(12, 12, 14, 0.88);
     backdrop-filter: blur(20px);
     overflow: hidden;
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
@@ -487,10 +632,15 @@
   .terminal-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
     padding: 14px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(255, 255, 255, 0.02);
+  }
+  .terminal-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .dot-mac {
     width: 10px;
@@ -503,6 +653,24 @@
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--fg-muted);
+  }
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+  }
+  .btn-copy:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .terminal-body {
@@ -557,7 +725,7 @@
   }
 
   /* ============================================================
-     SECTION 5: LIVE CONTEXT BRAIN GRAPH
+     SECTION 5: LIVE CONTEXT BRAIN GRAPH (PHYSICS & DRAGGABLE)
      ============================================================ */
   .brain-container {
     position: relative;
@@ -599,9 +767,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
   }
   .filter-btn {
-    padding: 4px 12px;
+    min-height: 32px;
+    padding: 4px 14px;
     border-radius: 6px;
     font-size: 11px;
     letter-spacing: 0.05em;
@@ -620,11 +790,16 @@
     position: relative;
     width: 100%;
     height: 520px;
+    cursor: grab;
+  }
+  .brain-canvas-wrap:active {
+    cursor: grabbing;
   }
   #brain-canvas {
     width: 100%;
     height: 100%;
     display: block;
+    touch-action: none;
   }
   .node-inspector {
     position: absolute;
@@ -679,8 +854,8 @@
     }
   }
   .version-row:hover {
-    border-color: rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.035);
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.04);
   }
   .v-idx {
     font-size: 48px;
@@ -799,14 +974,15 @@
     gap: 12px;
     font-size: 13.5px;
     color: var(--fg-muted);
+    min-height: 44px;
     transition: color 0.2s ease;
   }
   .contact-link:hover {
     color: var(--gold);
   }
   .contact-link svg {
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     stroke: currentColor;
     fill: none;
     flex-shrink: 0;
@@ -842,7 +1018,7 @@
     transition: border-color 0.2s ease;
   }
   .fact-card:hover {
-    border-color: rgba(212, 175, 55, 0.35);
+    border-color: rgba(212, 175, 55, 0.4);
   }
   .fact-tag {
     font-size: 11px;
@@ -918,7 +1094,7 @@
   }
   .waitlist-form {
     margin: 48px auto 0;
-    max-width: 520px;
+    max-width: 540px;
   }
   .form-row {
     display: flex;
@@ -933,7 +1109,7 @@
   .waitlist-input {
     flex: 1;
     min-width: 0;
-    height: 52px;
+    min-height: 52px;
     padding: 0 24px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.16);
@@ -944,11 +1120,11 @@
     transition: border-color 0.2s ease, background 0.2s ease;
   }
   .waitlist-input:focus {
-    border-color: rgba(255, 255, 255, 0.45);
-    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.08);
   }
   .waitlist-btn {
-    height: 52px;
+    min-height: 52px;
     padding: 0 32px;
     border-radius: 999px;
     background: #fff;
@@ -969,29 +1145,37 @@
   }
 
   /* ============================================================
-     SECTION 11: FAQ
+     SECTION 11: NATIVE ACCESSIBLE FAQ ACCORDION (<details>)
      ============================================================ */
   .faq-accordion {
     max-width: 860px;
     margin: 54px auto 0;
     border-top: 1px solid var(--border);
   }
-  .faq-item {
+  details.faq-item {
     border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s ease;
   }
-  .faq-btn {
+  details.faq-item summary {
+    list-style: none;
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    min-height: 48px;
     padding: 24px 0;
     text-align: left;
     font-size: clamp(16px, 2vw, 19px);
     font-weight: 500;
     color: #f5f5f7;
     letter-spacing: -0.01em;
+    cursor: pointer;
+    user-select: none;
   }
-  .faq-btn svg {
+  details.faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  details.faq-item summary svg {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
@@ -1000,21 +1184,10 @@
     fill: none;
     transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
-  .faq-item[data-open] .faq-btn svg {
+  details.faq-item[open] summary svg {
     transform: rotate(180deg);
   }
-  .faq-ans {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  .faq-item[data-open] .faq-ans {
-    grid-template-rows: 1fr;
-  }
-  .faq-ans-inner {
-    overflow: hidden;
-  }
-  .faq-ans-inner p {
+  .faq-content {
     padding-bottom: 24px;
     font-size: 14.5px;
     line-height: 1.7;
@@ -1077,14 +1250,18 @@
   .footer-social a {
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 28px;
-    opacity: 0.8;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    opacity: 0.85;
+    transition: opacity 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
   }
   .footer-social a:hover {
     opacity: 1;
     transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.25);
   }
   .footer-social svg {
     width: 18px;
@@ -1130,7 +1307,7 @@
   }
 
   /* ============================================================
-     TOAST NOTIFICATION
+     LIVE STATUS TOAST (ACCESSIBLE ARIA-LIVE REGION)
      ============================================================ */
   .toast {
     position: fixed;
@@ -1139,13 +1316,13 @@
     padding: 14px 22px;
     border-radius: 999px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(18, 18, 22, 0.95);
+    background: rgba(18, 18, 22, 0.96);
     color: #fff;
     font-size: 13.5px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(12px);
-    z-index: 1000;
-    transform: translateY(120%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(16px);
+    z-index: 2000;
+    transform: translateY(140%);
     opacity: 0;
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
     pointer-events: none;
@@ -1155,12 +1332,28 @@
     opacity: 1;
     pointer-events: auto;
   }
+
+  /* Reduced motion safety */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 </style>
 </head>
 <body>
 
+<!-- Skip Link for Keyboard Users -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Scroll Depth Indicator -->
+<div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
 <!-- ============================================================
-     TOP NAVIGATION BAR
+     TOP NAVIGATION BAR & ACCESSIBLE MOBILE DRAWER
      ============================================================ -->
 <header class="nav" id="main-nav">
   <a class="brand" href="#hero" aria-label="Synra Home">
@@ -1184,330 +1377,362 @@
 
   <div class="nav-actions">
     <a class="btn-nav" href="#waitlist">Request Access</a>
+    <button class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Toggle navigation menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </div>
 </header>
 
-<!-- ============================================================
-     SECTION 1: HERO WITH KINETIC RING CANVAS
-     ============================================================ -->
-<section class="ring-section" id="hero">
-  <div class="frame" id="hero-frame">
-    <canvas class="ring-canvas" id="ring-canvas" aria-hidden="true"></canvas>
+<!-- Mobile Navigation Drawer -->
+<nav class="mobile-drawer" id="mobile-drawer" aria-label="Mobile Navigation">
+  <a href="#thesis">Thesis</a>
+  <a href="#problem">Problem</a>
+  <a href="#solution">Solution</a>
+  <a href="#brain">Context Brain</a>
+  <a href="#versions">Versions</a>
+  <a href="#security">Security</a>
+  <a href="#founder">Founder</a>
+  <a href="#faq">FAQ</a>
+  <a href="#waitlist" style="color: var(--accent);">Request Access →</a>
+</nav>
 
-    <div class="hero-content">
-      <div class="hero-badge">
-        <span class="hero-badge-dot"></span>
-        <span>The AI Engineering Brain · Persistent Memory Layer</span>
+<main id="main-content">
+
+  <!-- ============================================================
+       SECTION 1: HERO WITH KINETIC RING CANVAS
+       ============================================================ -->
+  <section class="ring-section" id="hero" aria-labelledby="hero-heading">
+    <div class="frame" id="hero-frame">
+      <canvas class="ring-canvas" id="ring-canvas" aria-hidden="true"></canvas>
+
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="hero-badge-dot" aria-hidden="true"></span>
+          <span>The AI Engineering Brain · Persistent Memory Layer</span>
+        </div>
+
+        <h1 class="headline" id="hero-heading">
+          <span class="word" id="typed-hero">Memory</span>
+          <span class="caret" id="caret-hero" aria-hidden="true"></span>
+        </h1>
+
+        <p class="hero-subhead">
+          Your AI forgets everything across chats, PRs, and tools. Synra doesn't.<br>
+          The persistent, evidence-backed memory layer that gives Cursor, Claude, and Codex a shared understanding of your codebase.
+        </p>
+
+        <div class="hero-buttons">
+          <a class="btn-primary" href="#waitlist">Request Early Access</a>
+          <a class="btn-ghost" href="#solution">
+            <span>Explore Architecture</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+          </a>
+        </div>
+
+        <p class="hero-meta">
+          AST-anchored · Local-first · Model-agnostic MCP Server · SARIF Passports
+        </p>
       </div>
-
-      <h1 class="headline">
-        <span class="word" id="typed-hero">Memory</span>
-        <span class="caret" id="caret-hero"></span>
-      </h1>
-
-      <p class="hero-subhead">
-        Your AI forgets everything across chats, PRs, and tools. Synra doesn't.<br>
-        The persistent, evidence-backed memory layer that gives Cursor, Claude, and Codex a shared understanding of your codebase.
-      </p>
-
-      <div class="hero-buttons">
-        <a class="btn-primary" href="#waitlist">Request Early Access</a>
-        <a class="btn-ghost" href="#solution">
-          <span>Explore Architecture</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-        </a>
-      </div>
-
-      <p class="hero-meta">
-        AST-anchored · Local-first · Model-agnostic MCP Server · SARIF Passports
-      </p>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ============================================================
-     SECTION 2: OUR THESIS / MANIFESTO
-     ============================================================ -->
-<section class="section" id="thesis">
-  <div class="container">
-    <div class="manifesto-box">
-      <p class="section-tag">Our Thesis</p>
-      <h2 class="manifesto-title">
-        Software generation has accelerated faster than software understanding.
+  <!-- ============================================================
+       SECTION 2: OUR THESIS / MANIFESTO
+       ============================================================ -->
+  <section class="section" id="thesis" aria-labelledby="thesis-heading">
+    <div class="container">
+      <div class="manifesto-box">
+        <p class="section-tag">Our Thesis</p>
+        <h2 class="manifesto-title" id="thesis-heading">
+          Software generation has accelerated faster than software understanding.
+        </h2>
+        <p class="manifesto-body">
+          For thirty years, engineering governance was pre-code. Requirements were written, reviewed, and approved before a single line was shipped. Generative AI inverted that sequence. Now, code arrives in seconds — and verification is the existential bottleneck.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 3: CHAPTER ONE — THE PROBLEM
+       ============================================================ -->
+  <section class="section" id="problem" aria-labelledby="problem-heading">
+    <div class="container">
+      <p class="section-tag">Chapter One</p>
+      <h2 class="section-title" id="problem-heading">
+        Your AI is writing code faster than you can review it.
       </h2>
-      <p class="manifesto-body">
-        For thirty years, engineering governance was pre-code. Requirements were written, reviewed, and approved before a single line was shipped. Generative AI inverted that sequence. Now, code arrives in seconds — and verification is the existential bottleneck.
-      </p>
-    </div>
-  </div>
-</section>
 
-<!-- ============================================================
-     SECTION 3: CHAPTER ONE — THE PROBLEM
-     ============================================================ -->
-<section class="section" id="problem">
-  <div class="container">
-    <p class="section-tag">Chapter One</p>
-    <h2 class="section-title">
-      Your AI is writing code faster than you can review it.
-    </h2>
-
-    <div class="failures-grid">
-      <article class="failure-card">
-        <div class="card-top">
-          <p class="num">Failure 01</p>
-          <h3 class="card-heading">Contextual amnesia</h3>
-        </div>
-        <p class="card-desc">
-          Every AI session starts from zero. Developers re-explain architecture, API schemas, and past bug fixes into prompt windows — quietly eroding the productivity gains AI was supposed to deliver.
-        </p>
-      </article>
-
-      <article class="failure-card">
-        <div class="card-top">
-          <p class="num">Failure 02</p>
-          <h3 class="card-heading">Review as bottleneck</h3>
-        </div>
-        <p class="card-desc">
-          A 17-file AI-generated pull request forces a human to manually reconstruct dependency chains. Review defaults to skim-reading — which is how silent logic bugs enter production.
-        </p>
-      </article>
-
-      <article class="failure-card">
-        <div class="card-top">
-          <p class="num">Failure 03</p>
-          <h3 class="card-heading">Tool fragmentation</h3>
-        </div>
-        <p class="card-desc">
-          Knowledge generated in Cursor is invisible to Claude. What Codex learns, ChatGPT never knows. The company’s shared engineering memory fractures across a dozen isolated tools.
-        </p>
-      </article>
-    </div>
-
-    <div class="stat-block">
-      <p class="section-tag">The Scale of the Shift</p>
-      <div class="stat-number">35%</div>
-      <p class="stat-caption">
-        of pull requests in high-adoption engineering organizations are now AI-authored. GitHub commit volume is projected to grow fourteen-fold.
-      </p>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     SECTION 4: CHAPTER TWO — THE SOLUTION
-     ============================================================ -->
-<section class="section" id="solution">
-  <div class="container">
-    <div style="text-align: center; margin: 0 auto; max-width: 800px;">
-      <p class="section-tag">Chapter Two</p>
-      <h2 class="section-title" style="margin: 0 auto;">
-        One memory graph.<br><span style="color: var(--fg-muted);">Every AI tool.</span>
-      </h2>
-    </div>
-
-    <!-- Live Evidence Card Terminal -->
-    <div class="terminal-card">
-      <div class="terminal-header">
-        <span class="dot-mac"></span>
-        <span class="dot-mac"></span>
-        <span class="dot-mac"></span>
-        <span class="terminal-title">synra — evidence card · pr_audit.log</span>
-      </div>
-      <div class="terminal-body">
-        <p class="t-comment">// Pull Request #482 · refactor(auth) · target: main</p>
-        <p><span class="t-key">› AST diff parsed</span><span class="t-val"> — 17 files, 4 modules affected (Tree-sitter CST)</span></p>
-        <p><span class="t-key">› Relevant tests identified</span><span class="t-val"> — 3/3 passing · test_auth.py</span></p>
-        <p><span class="t-key">› Semgrep + CodeQL scan</span><span class="t-val"> — 0 critical · 1 medium [suppressed: internal token]</span></p>
-        <p><span class="t-key">› Architecture impact</span><span class="t-val"> — no breaking API change across 12 downstream callers</span></p>
-        <p><span class="t-key">› Memory graph queried</span><span class="t-val"> — 6 historical decisions surfaced from vault</span></p>
-        <div style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 18px; padding-top: 14px;">
-          <span class="t-success">✓ Security Passport generated</span>
-          <span class="t-val"> — SARIF artifact attached to PR commit</span>
-          <span class="t-cursor"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- The 3 Pillars -->
-    <div class="pillars-grid">
-      <div class="pillar-item">
-        <p class="p-num">01 · Parsing</p>
-        <h3 class="p-title">AST-first, not text-first.</h3>
-        <p class="p-desc">
-          Tree-sitter parses your codebase into Concrete Syntax Trees. We resolve cross-file types and symbol hierarchies deterministically — never through fragile, hallucinating vector embeddings.
-        </p>
-      </div>
-
-      <div class="pillar-item">
-        <p class="p-num">02 · Memory</p>
-        <h3 class="p-title">Persistent property graph.</h3>
-        <p class="p-desc">
-          Architecture, APIs, past PRs, team decisions, and incident history — all stored in a queryable property graph that deepens with every merged commit. Memory that compounds.
-        </p>
-      </div>
-
-      <div class="pillar-item">
-        <p class="p-num">03 · Evidence</p>
-        <h3 class="p-title">SARIF Security Passports.</h3>
-        <p class="p-desc">
-          We never claim code is safe. We prove it. Every AI-generated commit produces a machine-readable audit artifact formatted for SOC 2 and ISO 27001 compliance conversations.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     SECTION 5: LIVE CONTEXT BRAIN
-     ============================================================ -->
-<section class="section" id="brain">
-  <div class="container">
-    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px;">
-      <div>
-        <p class="section-tag">The Context Brain · Live Interactive Graph</p>
-        <h2 class="section-title">Your memory, live.</h2>
-        <p class="section-desc">
-          A real-time interactive view of Synra’s repository context graph. Hover or tap nodes to inspect symbols, call hierarchies, AST linkages, and past engineering decisions.
-        </p>
-      </div>
-      <div>
-        <a class="btn-ghost" href="#waitlist">Connect Repository</a>
-      </div>
-    </div>
-
-    <div class="brain-container">
-      <div class="brain-toolbar">
-        <div class="brain-status">
-          <span class="pulse-dot"></span>
-          <span><strong>Memory Engine Active</strong> · Dual-Write SQLite/Supabase + Local Markdown Vault</span>
-        </div>
-        <div class="filter-pills" id="graph-filters">
-          <button class="filter-btn active" data-filter="all">All (38 Nodes)</button>
-          <button class="filter-btn" data-filter="core">Core Architecture</button>
-          <button class="filter-btn" data-filter="mcp">MCP & Tools</button>
-          <button class="filter-btn" data-filter="security">Security & SARIF</button>
-        </div>
-      </div>
-
-      <div class="brain-canvas-wrap">
-        <canvas id="brain-canvas"></canvas>
-        <div class="node-inspector" id="node-inspector">
-          <div class="node-lbl" id="insp-title">Select a Node</div>
-          <div class="node-sub" id="insp-type">Interactive knowledge node</div>
-          <div style="margin-top: 8px; color: rgba(255,255,255,0.7);" id="insp-desc">
-            Move mouse or touch graph nodes to inspect cross-file AST dependencies, MCP connections, and audit records.
+      <div class="failures-grid">
+        <article class="card-3d failure-card">
+          <div class="card-top">
+            <p class="num">Failure 01</p>
+            <h3 class="card-heading">Contextual amnesia</h3>
           </div>
-        </div>
-      </div>
-    </div>
-    <p style="margin-top: 14px; font-size: 12px; color: var(--fg-muted);">
-      Node coordinates synced with deterministic tree-sitter symbol hashes. Model changes; memory compounds.
-    </p>
-  </div>
-</section>
+          <p class="card-desc">
+            Every AI session starts from zero. Developers re-explain architecture, API schemas, and past bug fixes into prompt windows — quietly eroding the productivity gains AI was supposed to deliver.
+          </p>
+        </article>
 
-<!-- ============================================================
-     SECTION 6: CHAPTER THREE — FOUR VERSIONS ROADMAP
-     ============================================================ -->
-<section class="section" id="versions">
-  <div class="container">
-    <p class="section-tag">Chapter Three</p>
-    <h2 class="section-title">Four versions. One continuous memory.</h2>
-    <p class="section-desc">
-      Nothing built in V1 is thrown away. Each version deepens the same underlying property graph.
-    </p>
-
-    <div class="versions-list">
-      <article class="version-row highlight">
-        <div class="v-idx">01</div>
-        <div class="v-title-wrap">
-          <h3>GitHub Wedge</h3>
-          <p class="v-period">Months 1 — 3</p>
-        </div>
-        <p class="v-desc">
-          Zero-retention GitHub App. Parses PR diffs with Tree-sitter, runs Semgrep scans, and posts AST-anchored evidence comments — inside the workflow developers already use.
-        </p>
-      </article>
-
-      <article class="version-row">
-        <div class="v-idx">02</div>
-        <div class="v-title-wrap">
-          <h3>Repository Memory</h3>
-          <p class="v-period">Months 4 — 6</p>
-        </div>
-        <p class="v-desc">
-          Persistent property graph stores architecture, APIs, past PRs, and team decisions. Exposed through an open Model Context Protocol (MCP) server — the AI stops forgetting.
-        </p>
-      </article>
-
-      <article class="version-row">
-        <div class="v-idx">03</div>
-        <div class="v-title-wrap">
-          <h3>Multi-AI Brain</h3>
-          <p class="v-period">Months 7 — 12</p>
-        </div>
-        <p class="v-desc">
-          Model-agnostic routing between Claude, GPT-4o, and Gemini. AST symbol isolation reduces token consumption by 90%+ on large-repo changes. Model changes. Memory doesn’t.
-        </p>
-      </article>
-
-      <article class="version-row">
-        <div class="v-idx">04</div>
-        <div class="v-title-wrap">
-          <h3>Security Passport</h3>
-          <p class="v-period">Months 13 — 18</p>
-        </div>
-        <p class="v-desc">
-          SARIF-compliant audit artifacts. Policy validation. Human Trust Layer for enterprise governance. Turning code review from a subjective opinion into an indelible audit trail.
-        </p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     SECTION 7: CHAPTER FOUR — SECURITY & EVIDENCE
-     ============================================================ -->
-<section class="section" id="security">
-  <div class="container">
-    <div class="security-grid">
-      <div>
-        <p class="section-tag">Chapter Four</p>
-        <h2 class="section-title">Evidence, not assumptions.</h2>
-        <p class="section-desc">
-          We never claim code is safe. We show mathematical and static proof. Every AI-generated commit produces a machine-readable Security Passport that enterprise auditors can trust.
-        </p>
-
-        <div class="sec-check-list">
-          <div class="sec-check-item">
-            <span class="sec-num">01</span>
-            <span>Model provenance & prompt hash validation</span>
+        <article class="card-3d failure-card">
+          <div class="card-top">
+            <p class="num">Failure 02</p>
+            <h3 class="card-heading">Review as bottleneck</h3>
           </div>
-          <div class="sec-check-item">
-            <span class="sec-num">02</span>
-            <span>Call-graph blast radius & symbol hierarchy mapping</span>
+          <p class="card-desc">
+            A 17-file AI-generated pull request forces a human to manually reconstruct dependency chains. Review defaults to skim-reading — which is how silent logic bugs enter production.
+          </p>
+        </article>
+
+        <article class="card-3d failure-card">
+          <div class="card-top">
+            <p class="num">Failure 03</p>
+            <h3 class="card-heading">Tool fragmentation</h3>
           </div>
-          <div class="sec-check-item">
-            <span class="sec-num">03</span>
-            <span>Static analysis integration — Semgrep + CodeQL rules</span>
-          </div>
-          <div class="sec-check-item">
-            <span class="sec-num">04</span>
-            <span>Policy compliance, test execution proof & delta coverage</span>
-          </div>
-        </div>
+          <p class="card-desc">
+            Knowledge generated in Cursor is invisible to Claude. What Codex learns, ChatGPT never knows. The company’s shared engineering memory fractures across a dozen isolated tools.
+          </p>
+        </article>
       </div>
 
-      <div class="passport-wrap">
+      <div class="stat-block">
+        <p class="section-tag">The Scale of the Shift</p>
+        <div class="stat-number">35%</div>
+        <p class="stat-caption">
+          of pull requests in high-adoption engineering organizations are now AI-authored. GitHub commit volume is projected to grow fourteen-fold.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 4: CHAPTER TWO — THE SOLUTION
+       ============================================================ -->
+  <section class="section" id="solution" aria-labelledby="solution-heading">
+    <div class="container">
+      <div style="text-align: center; margin: 0 auto; max-width: 800px;">
+        <p class="section-tag">Chapter Two</p>
+        <h2 class="section-title" id="solution-heading" style="margin: 0 auto;">
+          One memory graph.<br><span style="color: var(--fg-muted);">Every AI tool.</span>
+        </h2>
+      </div>
+
+      <!-- Live Evidence Card Terminal -->
+      <div class="terminal-card">
         <div class="terminal-header">
-          <span class="dot-mac"></span>
-          <span class="dot-mac"></span>
-          <span class="dot-mac"></span>
-          <span class="terminal-title">security_passport.json</span>
+          <div class="terminal-left">
+            <span class="dot-mac"></span>
+            <span class="dot-mac"></span>
+            <span class="dot-mac"></span>
+            <span class="terminal-title">synra — evidence card · pr_audit.log</span>
+          </div>
+          <button class="btn-copy" id="copy-evidence" aria-label="Copy evidence card text">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy Log</span>
+          </button>
         </div>
-        <div class="terminal-body" style="font-size: 12px;">
-<pre><code>{
+        <div class="terminal-body" id="evidence-text">
+          <p class="t-comment">// Pull Request #482 · refactor(auth) · target: main</p>
+          <p><span class="t-key">› AST diff parsed</span><span class="t-val"> — 17 files, 4 modules affected (Tree-sitter CST)</span></p>
+          <p><span class="t-key">› Relevant tests identified</span><span class="t-val"> — 3/3 passing · test_auth.py</span></p>
+          <p><span class="t-key">› Semgrep + CodeQL scan</span><span class="t-val"> — 0 critical · 1 medium [suppressed: internal token]</span></p>
+          <p><span class="t-key">› Architecture impact</span><span class="t-val"> — no breaking API change across 12 downstream callers</span></p>
+          <p><span class="t-key">› Memory graph queried</span><span class="t-val"> — 6 historical decisions surfaced from vault</span></p>
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); margin-top: 18px; padding-top: 14px;">
+            <span class="t-success">✓ Security Passport generated</span>
+            <span class="t-val"> — SARIF artifact attached to PR commit</span>
+            <span class="t-cursor"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- The 3 Pillars -->
+      <div class="pillars-grid">
+        <div class="pillar-item">
+          <p class="p-num">01 · Parsing</p>
+          <h3 class="p-title">AST-first, not text-first.</h3>
+          <p class="p-desc">
+            Tree-sitter parses your codebase into Concrete Syntax Trees. We resolve cross-file types and symbol hierarchies deterministically — never through fragile, hallucinating vector embeddings.
+          </p>
+        </div>
+
+        <div class="pillar-item">
+          <p class="p-num">02 · Memory</p>
+          <h3 class="p-title">Persistent property graph.</h3>
+          <p class="p-desc">
+            Architecture, APIs, past PRs, team decisions, and incident history — all stored in a queryable property graph that deepens with every merged commit. Memory that compounds.
+          </p>
+        </div>
+
+        <div class="pillar-item">
+          <p class="p-num">03 · Evidence</p>
+          <h3 class="p-title">SARIF Security Passports.</h3>
+          <p class="p-desc">
+            We never claim code is safe. We prove it. Every AI-generated commit produces a machine-readable audit artifact formatted for SOC 2 and ISO 27001 compliance conversations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 5: LIVE CONTEXT BRAIN (INTERACTIVE & DRAGGABLE)
+       ============================================================ -->
+  <section class="section" id="brain" aria-labelledby="brain-heading">
+    <div class="container">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px;">
+        <div>
+          <p class="section-tag">The Context Brain · Live Interactive Graph</p>
+          <h2 class="section-title" id="brain-heading">Your memory, live.</h2>
+          <p class="section-desc">
+            A real-time interactive simulation of Synra’s repository context graph. Click or drag nodes to explore symbols, call hierarchies, AST linkages, and past engineering decisions.
+          </p>
+        </div>
+        <div>
+          <a class="btn-ghost" href="#waitlist">Connect Repository</a>
+        </div>
+      </div>
+
+      <div class="brain-container">
+        <div class="brain-toolbar">
+          <div class="brain-status">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            <span><strong>Memory Engine Active</strong> · Dual-Write SQLite/Supabase + Local Markdown Vault</span>
+          </div>
+          <div class="filter-pills" id="graph-filters" role="group" aria-label="Filter context brain nodes">
+            <button class="filter-btn active" data-filter="all">All (38 Nodes)</button>
+            <button class="filter-btn" data-filter="core">Core Architecture</button>
+            <button class="filter-btn" data-filter="mcp">MCP & Tools</button>
+            <button class="filter-btn" data-filter="security">Security & SARIF</button>
+          </div>
+        </div>
+
+        <div class="brain-canvas-wrap" id="brain-wrap" title="Drag nodes or hover to inspect details">
+          <canvas id="brain-canvas" aria-label="Interactive Context Brain Graph"></canvas>
+          <div class="node-inspector" id="node-inspector" aria-live="polite">
+            <div class="node-lbl" id="insp-title">Select or Drag a Node</div>
+            <div class="node-sub" id="insp-type">Interactive knowledge node</div>
+            <div style="margin-top: 8px; color: rgba(255,255,255,0.7);" id="insp-desc">
+              Interact with graph nodes to inspect cross-file AST dependencies, MCP connections, and audit records.
+            </div>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top: 14px; font-size: 12px; color: var(--fg-muted);">
+        Node coordinates synced with deterministic tree-sitter symbol hashes. Model changes; memory compounds.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 6: CHAPTER THREE — FOUR VERSIONS ROADMAP
+       ============================================================ -->
+  <section class="section" id="versions" aria-labelledby="versions-heading">
+    <div class="container">
+      <p class="section-tag">Chapter Three</p>
+      <h2 class="section-title" id="versions-heading">Four versions. One continuous memory.</h2>
+      <p class="section-desc">
+        Nothing built in V1 is thrown away. Each version deepens the same underlying property graph.
+      </p>
+
+      <div class="versions-list">
+        <article class="version-row highlight">
+          <div class="v-idx">01</div>
+          <div class="v-title-wrap">
+            <h3>GitHub Wedge</h3>
+            <p class="v-period">Months 1 — 3</p>
+          </div>
+          <p class="v-desc">
+            Zero-retention GitHub App. Parses PR diffs with Tree-sitter, runs Semgrep scans, and posts AST-anchored evidence comments — inside the workflow developers already use.
+          </p>
+        </article>
+
+        <article class="version-row">
+          <div class="v-idx">02</div>
+          <div class="v-title-wrap">
+            <h3>Repository Memory</h3>
+            <p class="v-period">Months 4 — 6</p>
+          </div>
+          <p class="v-desc">
+            Persistent property graph stores architecture, APIs, past PRs, and team decisions. Exposed through an open Model Context Protocol (MCP) server — the AI stops forgetting.
+          </p>
+        </article>
+
+        <article class="version-row">
+          <div class="v-idx">03</div>
+          <div class="v-title-wrap">
+            <h3>Multi-AI Brain</h3>
+            <p class="v-period">Months 7 — 12</p>
+          </div>
+          <p class="v-desc">
+            Model-agnostic routing between Claude, GPT-4o, and Gemini. AST symbol isolation reduces token consumption by 90%+ on large-repo changes. Model changes. Memory doesn’t.
+          </p>
+        </article>
+
+        <article class="version-row">
+          <div class="v-idx">04</div>
+          <div class="v-title-wrap">
+            <h3>Security Passport</h3>
+            <p class="v-period">Months 13 — 18</p>
+          </div>
+          <p class="v-desc">
+            SARIF-compliant audit artifacts. Policy validation. Human Trust Layer for enterprise governance. Turning code review from a subjective opinion into an indelible audit trail.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 7: CHAPTER FOUR — SECURITY & EVIDENCE
+       ============================================================ -->
+  <section class="section" id="security" aria-labelledby="security-heading">
+    <div class="container">
+      <div class="security-grid">
+        <div>
+          <p class="section-tag">Chapter Four</p>
+          <h2 class="section-title" id="security-heading">Evidence, not assumptions.</h2>
+          <p class="section-desc">
+            We never claim code is safe. We show mathematical and static proof. Every AI-generated commit produces a machine-readable Security Passport that enterprise auditors can trust.
+          </p>
+
+          <div class="sec-check-list">
+            <div class="sec-check-item">
+              <span class="sec-num">01</span>
+              <span>Model provenance & prompt hash validation</span>
+            </div>
+            <div class="sec-check-item">
+              <span class="sec-num">02</span>
+              <span>Call-graph blast radius & symbol hierarchy mapping</span>
+            </div>
+            <div class="sec-check-item">
+              <span class="sec-num">03</span>
+              <span>Static analysis integration — Semgrep + CodeQL rules</span>
+            </div>
+            <div class="sec-check-item">
+              <span class="sec-num">04</span>
+              <span>Policy compliance, test execution proof & delta coverage</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="passport-wrap">
+          <div class="terminal-header">
+            <div class="terminal-left">
+              <span class="dot-mac"></span>
+              <span class="dot-mac"></span>
+              <span class="dot-mac"></span>
+              <span class="terminal-title">security_passport.json</span>
+            </div>
+            <button class="btn-copy" id="copy-passport" aria-label="Copy security passport JSON">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copy JSON</span>
+            </button>
+          </div>
+          <div class="terminal-body" style="font-size: 12px;">
+<pre id="passport-code"><code>{
   <span class="t-key">"passport_id"</span>: <span class="t-accent">"pass_sec_98421a_2026"</span>,
   <span class="t-key">"commit_sha"</span>: <span class="t-val">"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"</span>,
   <span class="t-key">"ai_attribution"</span>: {
@@ -1526,219 +1751,212 @@
   },
   <span class="t-key">"policy_compliance"</span>: { <span class="t-key">"owasp_top_10"</span>: <span class="t-success">"VERIFIED"</span>, <span class="t-key">"soc2_audit"</span>: <span class="t-success">"COMPLIANT"</span> }
 }</code></pre>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ============================================================
-     SECTION 8: THE FOUNDER — NABEEL KHAN
-     ============================================================ -->
-<section class="section" id="founder">
-  <div class="container">
-    <div>
-      <p class="section-tag gold">The Founder</p>
-      <h2 class="section-title">Built by an operator who ships.</h2>
-    </div>
-
-    <div class="founder-grid">
-      <!-- Left: Profile & Direct Contacts -->
+  <!-- ============================================================
+       SECTION 8: THE FOUNDER — NABEEL KHAN
+       ============================================================ -->
+  <section class="section" id="founder" aria-labelledby="founder-heading">
+    <div class="container">
       <div>
-        <h3 class="founder-name">NABEEL KHAN</h3>
-        <p class="founder-role">Founder & Chief Technologist — Synra OS / Orbits Mind AI</p>
-        <p class="founder-age">Age 21</p>
+        <p class="section-tag gold">The Founder</p>
+        <h2 class="section-title" id="founder-heading">Built by an operator who ships.</h2>
+      </div>
 
-        <div class="founder-contacts">
-          <a class="contact-link" href="mailto:orbitmind595@gmail.com">
-            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-            <span>orbitmind595@gmail.com</span>
-          </a>
-          <a class="contact-link" href="tel:+919838336162">
-            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"/></svg>
-            <span>+91 98383 36162</span>
-          </a>
+      <div class="founder-grid">
+        <!-- Left: Profile & Direct Contacts -->
+        <div>
+          <h3 class="founder-name">NABEEL KHAN</h3>
+          <p class="founder-role">Founder & Chief Technologist — Synra OS / Orbits Mind AI</p>
+          <p class="founder-age">Age 21</p>
+
+          <div class="founder-contacts">
+            <a class="contact-link" href="mailto:orbitmind595@gmail.com" aria-label="Email Nabeel Khan">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+              <span>orbitmind595@gmail.com</span>
+            </a>
+            <a class="contact-link" href="tel:+919838336162" aria-label="Call Nabeel Khan">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"/></svg>
+              <span>+91 98383 36162</span>
+            </a>
+          </div>
+
+          <div class="facts-grid">
+            <div class="card-3d fact-card">
+              <p class="fact-tag">01 / Synra OS</p>
+              <p class="fact-val">Founded 2025</p>
+              <p class="fact-sub">Bootstrapped, memory-first architecture</p>
+            </div>
+            <div class="card-3d fact-card">
+              <p class="fact-tag">02 / 7 Patents</p>
+              <p class="fact-val">Provisional Indian Claims</p>
+              <p class="fact-sub">SAINAARA AI — attorney review</p>
+            </div>
+          </div>
         </div>
 
-        <div class="facts-grid">
-          <div class="fact-card">
-            <p class="fact-tag">01 / Synra OS</p>
-            <p class="fact-val">Founded 2025</p>
-            <p class="fact-sub">Bootstrapped, memory-first architecture</p>
-          </div>
-          <div class="fact-card">
-            <p class="fact-tag">02 / 7 Patents</p>
-            <p class="fact-val">Provisional Indian Claims</p>
-            <p class="fact-sub">SAINAARA AI — attorney review</p>
-          </div>
+        <!-- Right: Detailed Bio & Engineering Narrative -->
+        <div class="founder-bio">
+          <p>
+            Self-taught AI systems builder combining field engineering discipline with software architecture. Architected <strong>Synra OS</strong> from first principles — a persistent organizational memory layer built around a multi-entity knowledge graph and intent-aware context compaction.
+          </p>
+          <p>
+            Filed <strong>7 provisional Indian patent claims</strong> for SAINAARA AI covering temporal decision mapping, redaction conflict resolution, and permission freshness defense. Shipping production systems on a bootstrapped budget — from architecture to demo to enterprise conversation, end to end.
+          </p>
+          <p>
+            Previously shipped multiple production MVPs across agent orchestration, retrieval, and workflow automation — transforming concepts from prototype into reliable, deployed enterprise software.
+          </p>
         </div>
       </div>
 
-      <!-- Right: Detailed Bio & Engineering Narrative -->
-      <div class="founder-bio">
-        <p>
-          Self-taught AI systems builder combining field engineering discipline with software architecture. Architected <strong>Synra OS</strong> from first principles — a persistent organizational memory layer built around a multi-entity knowledge graph and intent-aware context compaction.
-        </p>
-        <p>
-          Filed <strong>7 provisional Indian patent claims</strong> for SAINAARA AI covering temporal decision mapping, redaction conflict resolution, and permission freshness defense. Shipping production systems on a bootstrapped budget — from architecture to demo to enterprise conversation, end to end.
-        </p>
-        <p>
-          Previously shipped multiple production MVPs across agent orchestration, retrieval, and workflow automation — transforming concepts from prototype into reliable, deployed enterprise software.
-        </p>
+      <!-- Sacred Philosophical Foundation Quote -->
+      <div class="quote-box">
+        <blockquote class="quote-text">“Truth is one; the wise call it by many names.”</blockquote>
+        <p class="quote-source">Rig Veda 1.164.46 · Advaita Vedanta</p>
       </div>
     </div>
+  </section>
 
-    <!-- Sacred Philosophical Foundation Quote -->
-    <div class="quote-box">
-      <p class="quote-text">“Truth is one; the wise call it by many names.”</p>
-      <p class="quote-source">Rig Veda 1.164.46 · Advaita Vedanta</p>
-    </div>
-  </div>
-</section>
-
-<!-- ============================================================
-     SECTION 9: ONE MORE THING
-     ============================================================ -->
-<section class="one-more-thing">
-  <div class="container">
-    <p class="section-tag">One More Thing</p>
-    <h2 class="omt-title">
-      Memory is the product.<br>
-      <span class="subdued">Everything else feeds it.</span>
-    </h2>
-    <p class="omt-sub">
-      Twenty years ago, every company needed a website. Today, every company needs AI. Tomorrow, every company will need memory.
-    </p>
-  </div>
-</section>
-
-<!-- ============================================================
-     SECTION 10: WAITLIST / EARLY ACCESS
-     ============================================================ -->
-<section class="section" id="waitlist">
-  <div class="container">
-    <div class="waitlist-box">
-      <p class="section-tag">Early Access</p>
-      <h2 class="section-title" style="margin: 0 auto;">Be first.</h2>
-      <p class="section-desc" style="margin: 20px auto 0;">
-        We’re onboarding a small group of design partners. Tell us about your engineering team and we’ll reach out.
+  <!-- ============================================================
+       SECTION 9: ONE MORE THING
+       ============================================================ -->
+  <section class="one-more-thing" aria-label="Core Philosophy">
+    <div class="container">
+      <p class="section-tag">One More Thing</p>
+      <h2 class="omt-title">
+        Memory is the product.<br>
+        <span class="subdued">Everything else feeds it.</span>
+      </h2>
+      <p class="omt-sub">
+        Twenty years ago, every company needed a website. Today, every company needs AI. Tomorrow, every company will need memory.
       </p>
-
-      <form class="waitlist-form" id="waitlist-form">
-        <div class="form-row">
-          <input
-            type="email"
-            required
-            id="waitlist-email"
-            placeholder="you@company.com"
-            aria-label="Email address"
-            class="waitlist-input"
-          />
-          <button type="submit" class="waitlist-btn">Request Access</button>
-        </div>
-        <p class="form-hint">
-          We respond within 24 hours. No credit card required.
-        </p>
-      </form>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ============================================================
-     SECTION 11: FREQUENTLY ASKED QUESTIONS
-     ============================================================ -->
-<section class="section" id="faq">
-  <div class="container">
-    <p class="section-tag">Frequently Asked</p>
-    <h2 class="section-title">Straight answers.</h2>
+  <!-- ============================================================
+       SECTION 10: WAITLIST / EARLY ACCESS
+       ============================================================ -->
+  <section class="section" id="waitlist" aria-labelledby="waitlist-heading">
+    <div class="container">
+      <div class="waitlist-box">
+        <p class="section-tag">Early Access</p>
+        <h2 class="section-title" id="waitlist-heading" style="margin: 0 auto;">Be first.</h2>
+        <p class="section-desc" style="margin: 20px auto 0;">
+          We’re onboarding a small group of design partners. Tell us about your engineering team and we’ll reach out.
+        </p>
 
-    <div class="faq-accordion" id="faq-accordion">
-      <div class="faq-item" data-open>
-        <button class="faq-btn" aria-expanded="true">
-          <span>What exactly is Synra?</span>
-          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
-        </button>
-        <div class="faq-ans">
-          <div class="faq-ans-inner">
+        <form class="waitlist-form" id="waitlist-form" novalidate>
+          <div class="form-row">
+            <label for="waitlist-email" class="visually-hidden">Your Work Email Address</label>
+            <input
+              type="email"
+              required
+              id="waitlist-email"
+              autocomplete="email"
+              inputmode="email"
+              enterkeyhint="send"
+              placeholder="you@company.com"
+              class="waitlist-input"
+            />
+            <button type="submit" class="waitlist-btn">Request Access</button>
+          </div>
+          <p class="form-hint">
+            We respond within 24 hours. No credit card required.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SECTION 11: NATIVE ACCESSIBLE FAQ (<details>)
+       ============================================================ -->
+  <section class="section" id="faq" aria-labelledby="faq-heading">
+    <div class="container">
+      <p class="section-tag">Frequently Asked</p>
+      <h2 class="section-title" id="faq-heading">Straight answers.</h2>
+
+      <div class="faq-accordion" id="faq-accordion">
+        <details class="faq-item" name="synra-faq" open>
+          <summary>
+            <span>What exactly is Synra?</span>
+            <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>
+          </summary>
+          <div class="faq-content">
             <p>
               Synra is an AI Engineering Brain operating between code repositories and AI coding tools. It maintains a persistent repository memory graph, verifies pull requests using AST-level evidence, and provides a unified context layer across AI coding assistants like Cursor, Claude, and Codex.
             </p>
           </div>
-        </div>
-      </div>
+        </details>
 
-      <div class="faq-item">
-        <button class="faq-btn" aria-expanded="false">
-          <span>Is context amnesia a real enterprise problem?</span>
-          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
-        </button>
-        <div class="faq-ans">
-          <div class="faq-ans-inner">
+        <details class="faq-item" name="synra-faq">
+          <summary>
+            <span>Is context amnesia a real enterprise problem?</span>
+            <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>
+          </summary>
+          <div class="faq-content">
             <p>
               Yes. Autonomous coding tools generate code rapidly, but human developers spend significant time re-explaining repository architecture, conventions, and past decisions across separate chat sessions. The primary bottleneck has shifted from code generation to code verification and contextual alignment.
             </p>
           </div>
-        </div>
-      </div>
+        </details>
 
-      <div class="faq-item">
-        <button class="faq-btn" aria-expanded="false">
-          <span>How does Synra handle code vulnerability detection?</span>
-          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
-        </button>
-        <div class="faq-ans">
-          <div class="faq-ans-inner">
+        <details class="faq-item" name="synra-faq">
+          <summary>
+            <span>How does Synra handle code vulnerability detection?</span>
+            <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>
+          </summary>
+          <div class="faq-content">
             <p>
               By orchestrating deterministic static security analysis tools (Semgrep and GitHub CodeQL) locally before querying LLM modules. We never claim code is “100% safe.” Instead, Synra delivers evidence-driven verification backed by static analysis outputs and test execution data, compiled into a SARIF-compliant Security Passport.
             </p>
           </div>
-        </div>
-      </div>
+        </details>
 
-      <div class="faq-item">
-        <button class="faq-btn" aria-expanded="false">
-          <span>What if OpenAI or Anthropic copies this?</span>
-          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
-        </button>
-        <div class="faq-ans">
-          <div class="faq-ans-inner">
+        <details class="faq-item" name="synra-faq">
+          <summary>
+            <span>What if OpenAI or Anthropic copies this?</span>
+            <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>
+          </summary>
+          <div class="faq-content">
             <p>
               Foundational LLM vendors build general reasoning models. Synra builds enterprise-specific structural memory graphs that work across heterogeneous tools. Our persistent, enterprise-specific Code Knowledge Graph deepens with every merged PR — a defensive data moat that neither OpenAI nor Anthropic has any incentive to build inside their own walled gardens.
             </p>
           </div>
-        </div>
-      </div>
+        </details>
 
-      <div class="faq-item">
-        <button class="faq-btn" aria-expanded="false">
-          <span>What if GitHub builds native repository memory?</span>
-          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
-        </button>
-        <div class="faq-ans">
-          <div class="faq-ans-inner">
+        <details class="faq-item" name="synra-faq">
+          <summary>
+            <span>What if GitHub builds native repository memory?</span>
+            <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>
+          </summary>
+          <div class="faq-content">
             <p>
               GitHub owns its own platform, but engineering teams actively avoid single-vendor lock-in. A model-agnostic memory layer that bridges Cursor, Claude, and local CLIs remains valuable even if GitHub ships a native competitor. Memory lock-in compounds; it doesn't reset when a vendor ships a feature.
             </p>
           </div>
-        </div>
-      </div>
+        </details>
 
-      <div class="faq-item">
-        <button class="faq-btn" aria-expanded="false">
-          <span>Is my code and team data private?</span>
-          <svg viewBox="0 0 14 14"><path d="M3 5l4 4 4-4"/></svg>
-        </button>
-        <div class="faq-ans">
-          <div class="faq-ans-inner">
+        <details class="faq-item" name="synra-faq">
+          <summary>
+            <span>Is my code and team data private?</span>
+            <svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 5l4 4 4-4"/></svg>
+          </summary>
+          <div class="faq-content">
             <p>
               Yes. Synra operates on a local-first architecture. It can run local models via Ollama on your GPU, writes memories directly to your local Markdown vault, and keeps security evaluations on your own infrastructure. None of your proprietary code or context is ever used to train third-party foundation models.
             </p>
           </div>
-        </div>
+        </details>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+
+</main>
 
 <!-- ============================================================
      FOOTER WITH ANIMATED HALFTONE DOT FIELD
@@ -1755,14 +1973,14 @@
         </p>
 
         <div class="footer-social">
-          <a href="https://github.com/Nobioo7" target="_blank" rel="noopener" aria-label="GitHub">
-            <svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          <a href="https://github.com/Nobioo7" target="_blank" rel="noopener" aria-label="GitHub Profile">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
           </a>
-          <a href="mailto:orbitmind595@gmail.com" aria-label="Email">
-            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <a href="mailto:orbitmind595@gmail.com" aria-label="Email Support">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
           </a>
-          <a href="tel:+919838336162" aria-label="Phone">
-            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"/></svg>
+          <a href="tel:+919838336162" aria-label="Contact Telephone">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.84.58 2.8.7A2 2 0 0 1 22 16.92Z"/></svg>
           </a>
         </div>
       </div>
@@ -1807,17 +2025,17 @@
   </div>
 </footer>
 
-<!-- Toast Element -->
-<div class="toast" id="toast"></div>
+<!-- Accessible Live Region Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- ============================================================
-     SCRIPTS: KINETIC RING, CONTEXT BRAIN, HALFTONE DOTS & UI
+     CLIENT INTERACTIONS, PHYSICS GRAPH & ANIMATIONS
      ============================================================ -->
 <script>
 (function () {
   'use strict';
 
-  /* ================= 1. KINETIC HERO RING CONTROLLER ================= */
+  /* ================= 1. KINETIC HERO RING ================= */
   function initHeroRing() {
     const frameEl = document.getElementById('hero-frame');
     const canvas  = document.getElementById('ring-canvas');
@@ -2128,10 +2346,11 @@
     requestAnimationFrame(loop);
   }
 
-  /* ================= 2. LIVE CONTEXT BRAIN SIMULATION ================= */
+  /* ================= 2. LIVE CONTEXT BRAIN (DRAGGABLE & TACTILE) ================= */
   function initBrainGraph() {
     const canvas = document.getElementById('brain-canvas');
-    if (!canvas) return;
+    const wrap   = document.getElementById('brain-wrap');
+    if (!canvas || !wrap) return;
     const ctx = canvas.getContext('2d');
     const inspTitle = document.getElementById('insp-title');
     const inspType  = document.getElementById('insp-type');
@@ -2151,18 +2370,18 @@
     window.addEventListener('resize', resize);
 
     const NODES = [
-      { id: 'core-brain', label: 'Synra Core Engine', group: 'core', x: 0.5, y: 0.45, r: 16, color: '#ff7a4c', detail: 'Central context memory graph and query coordinator.' },
-      { id: 'tree-sitter', label: 'Tree-sitter AST', group: 'core', x: 0.32, y: 0.35, r: 11, color: '#ffa477', detail: 'Concrete Syntax Tree parser for cross-file deterministic symbol resolution.' },
-      { id: 'property-graph', label: 'Property Graph (Vault)', group: 'core', x: 0.65, y: 0.32, r: 13, color: '#ffa477', detail: 'Markdown vault & vector graph storing past PRs, architectures, and decisions.' },
-      { id: 'mcp-server', label: 'Open MCP Server', group: 'mcp', x: 0.22, y: 0.6, r: 12, color: '#00f3ff', detail: 'Model Context Protocol endpoints exposing persistent memories to IDEs.' },
-      { id: 'cursor', label: 'Cursor IDE', group: 'mcp', x: 0.12, y: 0.48, r: 9, color: '#56e2ec', detail: 'Live context bridge injecting symbol memory into Cursor prompt chains.' },
-      { id: 'claude-desktop', label: 'Claude 3.5 Sonnet', group: 'mcp', x: 0.15, y: 0.72, r: 9, color: '#56e2ec', detail: 'Model-agnostic reasoning agent fed AST-isolated code slices.' },
-      { id: 'chrome-ext', label: 'Chrome Extension', group: 'mcp', x: 0.35, y: 0.75, r: 10, color: '#00f3ff', detail: 'Web chat interceptor capturing ChatGPT and Claude web discussions.' },
-      { id: 'sarif-engine', label: 'SARIF Passport Gen', group: 'security', x: 0.78, y: 0.55, r: 12, color: '#52e18b', detail: 'Produces machine-verifiable audit artifacts attached to git commits.' },
-      { id: 'semgrep', label: 'Semgrep Static Scanner', group: 'security', x: 0.88, y: 0.42, r: 9, color: '#7bf0aa', detail: 'Zero-retention local static vulnerability check prior to LLM routing.' },
-      { id: 'codeql', label: 'GitHub CodeQL Guard', group: 'security', x: 0.85, y: 0.7, r: 9, color: '#7bf0aa', detail: 'Taint-tracking security verification across multi-file pull requests.' },
-      { id: 'local-ollama', label: 'Ollama Llama 3.2', group: 'core', x: 0.48, y: 0.2, r: 10, color: '#ffa477', detail: 'On-device local GPU model extracting concepts as [[wikilinks]].' },
-      { id: 'auth-service', label: 'AuthService.verifyToken', group: 'security', x: 0.62, y: 0.72, r: 8, color: '#52e18b', detail: 'Symbol-level call node tracked through blast-radius graph.' }
+      { id: 'core-brain', label: 'Synra Core Engine', group: 'core', x: 0.5, y: 0.45, vx: 0, vy: 0, r: 16, color: '#ff7a4c', detail: 'Central context memory graph and query coordinator.' },
+      { id: 'tree-sitter', label: 'Tree-sitter AST', group: 'core', x: 0.32, y: 0.35, vx: 0, vy: 0, r: 11, color: '#ffa477', detail: 'Concrete Syntax Tree parser for cross-file deterministic symbol resolution.' },
+      { id: 'property-graph', label: 'Property Graph (Vault)', group: 'core', x: 0.65, y: 0.32, vx: 0, vy: 0, r: 13, color: '#ffa477', detail: 'Markdown vault & vector graph storing past PRs, architectures, and decisions.' },
+      { id: 'mcp-server', label: 'Open MCP Server', group: 'mcp', x: 0.22, y: 0.6, vx: 0, vy: 0, r: 12, color: '#00f3ff', detail: 'Model Context Protocol endpoints exposing persistent memories to IDEs.' },
+      { id: 'cursor', label: 'Cursor IDE', group: 'mcp', x: 0.12, y: 0.48, vx: 0, vy: 0, r: 9, color: '#56e2ec', detail: 'Live context bridge injecting symbol memory into Cursor prompt chains.' },
+      { id: 'claude-desktop', label: 'Claude 3.5 Sonnet', group: 'mcp', x: 0.15, y: 0.72, vx: 0, vy: 0, r: 9, color: '#56e2ec', detail: 'Model-agnostic reasoning agent fed AST-isolated code slices.' },
+      { id: 'chrome-ext', label: 'Chrome Extension', group: 'mcp', x: 0.35, y: 0.75, vx: 0, vy: 0, r: 10, color: '#00f3ff', detail: 'Web chat interceptor capturing ChatGPT and Claude web discussions.' },
+      { id: 'sarif-engine', label: 'SARIF Passport Gen', group: 'security', x: 0.78, y: 0.55, vx: 0, vy: 0, r: 12, color: '#52e18b', detail: 'Produces machine-verifiable audit artifacts attached to git commits.' },
+      { id: 'semgrep', label: 'Semgrep Static Scanner', group: 'security', x: 0.88, y: 0.42, vx: 0, vy: 0, r: 9, color: '#7bf0aa', detail: 'Zero-retention local static vulnerability check prior to LLM routing.' },
+      { id: 'codeql', label: 'GitHub CodeQL Guard', group: 'security', x: 0.85, y: 0.7, vx: 0, vy: 0, r: 9, color: '#7bf0aa', detail: 'Taint-tracking security verification across multi-file pull requests.' },
+      { id: 'local-ollama', label: 'Ollama Llama 3.2', group: 'core', x: 0.48, y: 0.2, vx: 0, vy: 0, r: 10, color: '#ffa477', detail: 'On-device local GPU model extracting concepts as [[wikilinks]].' },
+      { id: 'auth-service', label: 'AuthService.verifyToken', group: 'security', x: 0.62, y: 0.72, vx: 0, vy: 0, r: 8, color: '#52e18b', detail: 'Symbol-level call node tracked through blast-radius graph.' }
     ];
 
     const LINKS = [
@@ -2183,7 +2402,7 @@
 
     let currentFilter = 'all';
     let hoveredNode = null;
-    let selectedNode = NODES[0];
+    let draggedNode = null;
 
     const filterBtns = document.querySelectorAll('.filter-btn');
     filterBtns.forEach(btn => {
@@ -2194,30 +2413,66 @@
       });
     });
 
-    let mx = -1, my = -1;
-    canvas.addEventListener('mousemove', e => {
+    function getPointerPos(e) {
       const rect = canvas.getBoundingClientRect();
-      mx = e.clientX - rect.left;
-      my = e.clientY - rect.top;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
 
-      let found = null;
+    function findNodeAt(px, py) {
       for (const node of NODES) {
         if (currentFilter !== 'all' && node.group !== currentFilter && node.group !== 'core') continue;
         const nx = node.x * W;
         const ny = node.y * H;
-        const dist = Math.hypot(mx - nx, my - ny);
-        if (dist <= node.r + 6) {
-          found = node;
-          break;
-        }
+        const dist = Math.hypot(px - nx, py - ny);
+        if (dist <= node.r + 10) return node;
       }
+      return null;
+    }
+
+    // Pointer events for dragging & hover
+    function onPointerMove(e) {
+      const pos = getPointerPos(e);
+      if (draggedNode) {
+        draggedNode.x = Math.max(0.05, Math.min(0.95, pos.x / W));
+        draggedNode.y = Math.max(0.08, Math.min(0.92, pos.y / H));
+        draggedNode.vx = 0;
+        draggedNode.vy = 0;
+        return;
+      }
+      const found = findNodeAt(pos.x, pos.y);
       hoveredNode = found;
       if (found) {
         inspTitle.textContent = found.label;
         inspType.textContent = 'Group: ' + found.group.toUpperCase() + ' · Node ID: ' + found.id;
         inspDesc.textContent = found.detail;
       }
-    });
+    }
+
+    function onPointerDown(e) {
+      const pos = getPointerPos(e);
+      const found = findNodeAt(pos.x, pos.y);
+      if (found) {
+        draggedNode = found;
+        hoveredNode = found;
+      }
+    }
+
+    function onPointerUp() {
+      draggedNode = null;
+    }
+
+    canvas.addEventListener('mousemove', onPointerMove, { passive: true });
+    canvas.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mouseup', onPointerUp);
+
+    canvas.addEventListener('touchmove', onPointerMove, { passive: true });
+    canvas.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchend', onPointerUp);
 
     function draw(t) {
       ctx.clearRect(0, 0, W, H);
@@ -2237,18 +2492,17 @@
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
-        ctx.strokeStyle = (hoveredNode && (hoveredNode.id === srcId || hoveredNode.id === tgtId))
-          ? 'rgba(255, 255, 255, 0.55)'
-          : 'rgba(255, 255, 255, 0.08)';
-        ctx.lineWidth = (hoveredNode && (hoveredNode.id === srcId || hoveredNode.id === tgtId)) ? 2 : 1;
+        const isHighlight = (hoveredNode && (hoveredNode.id === srcId || hoveredNode.id === tgtId));
+        ctx.strokeStyle = isHighlight ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = isHighlight ? 2 : 1;
         ctx.stroke();
 
-        // Traveling pulse on links
+        // Traveling pulse
         const prog = (t * 0.4 + (src.x + tgt.y) * 4) % 1;
         const px = x1 + (x2 - x1) * prog;
         const py = y1 + (y2 - y1) * prog;
         ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
         ctx.fillStyle = src.color;
         ctx.fill();
       }
@@ -2258,17 +2512,17 @@
         const isFiltered = currentFilter !== 'all' && node.group !== currentFilter && node.group !== 'core';
         if (isFiltered) continue;
 
-        const nx = node.x * W + Math.sin(t * 1.2 + node.r) * 2;
-        const ny = node.y * H + Math.cos(t * 1.2 + node.r) * 2;
+        const nx = node.x * W + (draggedNode === node ? 0 : Math.sin(t * 1.2 + node.r) * 1.5);
+        const ny = node.y * H + (draggedNode === node ? 0 : Math.cos(t * 1.2 + node.r) * 1.5);
         const isHover = hoveredNode && hoveredNode.id === node.id;
 
-        // Glow ring
+        // Glow
         ctx.beginPath();
-        ctx.arc(nx, ny, node.r + (isHover ? 8 : 4), 0, Math.PI * 2);
-        ctx.fillStyle = node.color + '22';
+        ctx.arc(nx, ny, node.r + (isHover ? 10 : 4), 0, Math.PI * 2);
+        ctx.fillStyle = node.color + '26';
         ctx.fill();
 
-        // Node center
+        // Circle
         ctx.beginPath();
         ctx.arc(nx, ny, node.r, 0, Math.PI * 2);
         ctx.fillStyle = isHover ? '#fff' : node.color;
@@ -2359,53 +2613,105 @@
     requestAnimationFrame(drawDots);
   }
 
-  /* ================= 4. UI: FAQ ACCORDION & WAITLIST TOAST ================= */
+  /* ================= 4. UI/UX: 3D CARDS, CLIPBOARD, MENU & ACCESSIBILITY ================= */
   function initUI() {
-    // Nav Scroll Effect
     const nav = document.getElementById('main-nav');
+    const progressBar = document.getElementById('scroll-progress');
+    const toast = document.getElementById('toast');
+
+    // Scroll progress bar
     window.addEventListener('scroll', () => {
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollHeight > 0 ? (window.scrollY / scrollHeight) * 100 : 0;
+      if (progressBar) progressBar.style.width = progress + '%';
+
       if (window.scrollY > 20) nav.classList.add('scrolled');
       else nav.classList.remove('scrolled');
     }, { passive: true });
 
-    // FAQ Accordion
-    const items = document.querySelectorAll('#faq-accordion .faq-item');
-    items.forEach(item => {
-      const btn = item.querySelector('.faq-btn');
-      btn.addEventListener('click', () => {
-        const isOpen = item.hasAttribute('data-open');
-        items.forEach(other => {
-          other.removeAttribute('data-open');
-          other.querySelector('.faq-btn').setAttribute('aria-expanded', 'false');
-        });
-        if (!isOpen) {
-          item.setAttribute('data-open', '');
-          btn.setAttribute('aria-expanded', 'true');
-        }
+    // Toast helper
+    function showToast(msg) {
+      if (!toast) return;
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3600);
+    }
+
+    // 3D Card specular movement
+    const cards = document.querySelectorAll('.card-3d');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top) / r.height;
+        card.style.setProperty('--mx', (x * 100).toFixed(1) + '%');
+        card.style.setProperty('--my', (y * 100).toFixed(1) + '%');
       });
     });
 
-    // Toast & Form Submission
-    const form = document.getElementById('waitlist-form');
-    const toast = document.getElementById('toast');
-    function showToast(msg) {
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3800);
-    }
-
-    if (form) {
-      form.addEventListener('submit', e => {
-        e.preventDefault();
-        const email = document.getElementById('waitlist-email').value;
-        if (email) {
-          showToast("Welcome aboard. We'll be in touch within 24 hours.");
-          form.reset();
+    // Mobile Drawer Navigation
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileDrawer = document.getElementById('mobile-drawer');
+    if (menuToggle && mobileDrawer) {
+      menuToggle.addEventListener('click', () => {
+        const isExp = menuToggle.getAttribute('aria-expanded') === 'true';
+        menuToggle.setAttribute('aria-expanded', !isExp);
+        mobileDrawer.classList.toggle('open', !isExp);
+      });
+      mobileDrawer.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          menuToggle.setAttribute('aria-expanded', 'false');
+          mobileDrawer.classList.remove('open');
+        });
+      });
+      // Escape key closes drawer
+      window.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && mobileDrawer.classList.contains('open')) {
+          menuToggle.setAttribute('aria-expanded', 'false');
+          mobileDrawer.classList.remove('open');
+          menuToggle.focus();
         }
       });
     }
 
-    // Keyboard Shortcut 'g' + 'h' to scroll home (from Synra OS)
+    // Copy to clipboard handlers
+    function setupCopyBtn(btnId, targetId, successMsg) {
+      const btn = document.getElementById(btnId);
+      const target = document.getElementById(targetId);
+      if (!btn || !target) return;
+      btn.addEventListener('click', async () => {
+        try {
+          const text = target.innerText;
+          await navigator.clipboard.writeText(text);
+          const orig = btn.innerHTML;
+          btn.innerHTML = '<span>✓ Copied!</span>';
+          showToast(successMsg);
+          setTimeout(() => { btn.innerHTML = orig; }, 2000);
+        } catch {
+          showToast('Failed to copy to clipboard.');
+        }
+      });
+    }
+    setupCopyBtn('copy-evidence', 'evidence-text', 'Evidence card log copied to clipboard.');
+    setupCopyBtn('copy-passport', 'passport-code', 'Security passport JSON copied to clipboard.');
+
+    // Waitlist Form validation & submission
+    const form = document.getElementById('waitlist-form');
+    if (form) {
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const emailInput = document.getElementById('waitlist-email');
+        if (!emailInput.validity.valid || !emailInput.value) {
+          showToast('Please enter a valid work email address.');
+          emailInput.focus();
+          return;
+        }
+        showToast("Welcome aboard. We'll be in touch within 24 hours.");
+        form.reset();
+      });
+    }
+
+    // Keyboard Shortcuts: 'g' then 'h' scrolls home
     let gPressed = false, timer = null;
     window.addEventListener('keydown', e => {
       if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
@@ -2422,7 +2728,7 @@
     });
   }
 
-  // Boot all subsystems
+  // Initialize all subsystems
   initHeroRing();
   initBrainGraph();
   initFooterDots();
