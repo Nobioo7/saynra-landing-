@@ -1,6 +1,7 @@
 import React from 'react';
 import HeroSection from './components/HeroSection';
 import BenefitsSection from './components/BenefitsSection';
+import BenchmarksSection from './components/BenchmarksSection';
 import SolaceSection from './components/SolaceSection';
 
 export const App: React.FC = () => {
@@ -12,7 +13,10 @@ export const App: React.FC = () => {
       {/* SECTION 2: KEY BENEFITS */}
       <BenefitsSection />
 
-      {/* SECTION 3: FAQ & FOUNDER CONTACT */}
+      {/* SECTION 3: BENCHMARKS */}
+      <BenchmarksSection />
+
+      {/* SECTION 4: FAQ & FOUNDER CONTACT */}
       <SolaceSection />
     </div>
   );
